@@ -26,8 +26,14 @@ def get_my_krw_balance(myinfo_map):
 # 주문 가능 수량
 def get_possible_order_volume(coin_info=[]):
     unit_price = get_current_coin_price(coin_info)
-    return float(5000 / unit_price)
+    if unit_price == 0:
+        return 0
+    else:
+        return float(5000 / unit_price)
 
 
 def get_profit_rate(current_unit_price=0, buy_unit_price=0):
-    return round((current_unit_price / buy_unit_price * 100), 2)
+    if buy_unit_price == 0:
+        return 0
+    else:
+        return round((current_unit_price / buy_unit_price * 100), 2)
