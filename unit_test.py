@@ -11,7 +11,7 @@ def util_test():
     best_coin = 'KRW-IOST'
     coin_info = pyupbit.view_candle_min(best_coin)
     print(pyupbit.get_coin_investablity(best_coin))
-    pyupbit.order_5000(
+    pyupbit.order_10000(
         market_name=best_coin,
         order_volume=pyupbit.get_possible_order_volume(coin_info),
         type='bid'

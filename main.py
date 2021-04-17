@@ -94,8 +94,8 @@ def profit_check_and_order():
             best_coin = get_best_coin_name()
             print(f"이번시간에 투자할 코인은? {best_coin}")
             coin_info = pyupbit.view_candle_min(best_coin)
-            # 5100원 어치 매수
-            pyupbit.order_5000(
+            # 10000원 어치 매수
+            pyupbit.order_10000(
                 market_name=best_coin,
                 order_volume=pyupbit.get_possible_order_volume(coin_info),
                 type='bid'
