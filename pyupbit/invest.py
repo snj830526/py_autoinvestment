@@ -6,6 +6,9 @@ from urllib.parse import urlencode
 import requests
 import json
 import pyupbit
+import datetime
+import time
+
 
 file = open('config.json')
 config = json.load(file)
@@ -101,3 +104,34 @@ def sell_all():
             order_volume=order_volume,
             type=type
         )
+
+
+def get_best_coin_name():
+    investable_coins_map = {}
+    market_codes = pyupbit.all_market_names.view_market_codes()
+    market_names = pyupbit.all_market_names.view_market_names()
+    print('오늘 날짜는? ' + str(datetime.today()))
+    while True:
+        i = 0
+        for code in market_codes:
+            coin = pyupbit.view_candle_day(code, market_names[i])
+            if coin is not None:
+                investable_coins_map.update(coin)
+            time.sleep(1)
+            i = i + 1
+        sorted(investable_coins_map.items(), reverse=True)
+        best_coin = list(investable_coins_map.values())[0]
+        slack_message = f"best_coin ::: {best_coin}"
+        print(slack_message)
+        pyupbit.send_message('myinvestment', slack_message)
+        return best_coin
+
+
+def order_best_coin(best_coin=''):
+    coin_info = pyupbit.view_candle_min(best_coin)
+    # 10000원 어치 매수
+    pyupbit.order_10000(
+        market_name=best_coin,
+        order_volume=pyupbit.get_possible_order_volume(coin_info),
+        type='bid'
+    )

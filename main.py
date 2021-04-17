@@ -63,27 +63,6 @@ def test_sort():
     #    print(key)
 
 
-def get_best_coin_name():
-    investable_coins_map = {}
-    market_codes = pyupbit.all_market_names.view_market_codes()
-    market_names = pyupbit.all_market_names.view_market_names()
-    print('오늘 날짜는? ' + str(datetime.today()))
-    while True:
-        i = 0
-        for code in market_codes:
-            coin = pyupbit.view_candle_day(code, market_names[i])
-            if coin is not None:
-                investable_coins_map.update(coin)
-            time.sleep(1)
-            i = i + 1
-        sorted(investable_coins_map.items(), reverse=True)
-        best_coin = list(investable_coins_map.values())[0]
-        slack_message = f"best_coin ::: {best_coin}"
-        print(slack_message)
-        pyupbit.send_message('myinvestment', slack_message)
-        return best_coin
-
-
 def profit_check_and_order():
     counter = 0
     while True:
@@ -91,15 +70,10 @@ def profit_check_and_order():
             # 전 시간에 투자 한 코인 전량 매도
             pyupbit.sell_all()
             print('Finding the best coin to invest...(It runs once in an hour.)')
-            best_coin = get_best_coin_name()
             print(f"이번시간에 투자할 코인은? {best_coin}")
-            coin_info = pyupbit.view_candle_min(best_coin)
             # 10000원 어치 매수
-            pyupbit.order_10000(
-                market_name=best_coin,
-                order_volume=pyupbit.get_possible_order_volume(coin_info),
-                type='bid'
-            )
+            best_coin = pyupbit.get_best_coin_name()
+            pyupbit.order_best_coin(best_coin)
 
         my_investment = pyupbit.get_my_coin_info()
         if my_investment is not None:
@@ -125,6 +99,10 @@ def profit_check_and_order():
                     print('sell!!')
                 else:
                     print('thinking...')
+            else:
+                # 10000원 어치 매수
+                best_coin = pyupbit.get_best_coin_name()
+                pyupbit.order_best_coin(best_coin)
         counter = counter + 1
         time.sleep(5)
 
