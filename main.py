@@ -70,9 +70,9 @@ def profit_check_and_order():
             # 전 시간에 투자 한 코인 전량 매도
             pyupbit.sell_all()
             print('Finding the best coin to invest...(It runs once in an hour.)')
-            print(f"이번시간에 투자할 코인은? {best_coin}")
             # 10000원 어치 매수
             best_coin = pyupbit.get_best_coin_name()
+            print(f"이번시간에 투자할 코인은? {best_coin}")
             pyupbit.order_best_coin(best_coin)
 
         my_investment = pyupbit.get_my_coin_info()
@@ -92,7 +92,7 @@ def profit_check_and_order():
                         pyupbit.order_10000(key, available_coin_amount, 'bid')
                         pyupbit.send_message('#myinvestment', f'[Buying!!-{str(datetime.today())}]' + slack_message1)
                         print('buy!!')
-                elif profit_rate > 100:
+                elif profit_rate > 101:
                     available_coin_amount = pyupbit.get_my_coin_total_amount(my_investment)
                     pyupbit.order_10000(key, available_coin_amount, 'ask')
                     pyupbit.send_message('#myinvestment', f'[Selling!!-{str(datetime.today())}]' + slack_message1)

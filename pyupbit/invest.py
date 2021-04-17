@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 import requests
 import json
 import pyupbit
-import datetime
+from datetime import datetime
 import time
 
 
