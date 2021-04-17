@@ -12,6 +12,7 @@ secret_key = config['secret_key']
 site_url = config['site_url']
 
 
+# 내 계좌 정보 조회
 def get_my_account():
     payLoad = {
         'access_key': access_key,
@@ -27,6 +28,7 @@ def get_my_account():
     return response.json()
 
 
+# 내가 가진 코인 요약 정보 조회
 def get_my_coin_info():
     account = get_my_account()
     print(f"내 계좌 전체 정보 ::: {account}")

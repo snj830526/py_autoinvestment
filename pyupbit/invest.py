@@ -18,6 +18,7 @@ secret_key = config['secret_key']
 site_url = config['site_url']
 
 
+# 코인이 투자 가능한 상태인지 조회
 def get_coin_investablity(market="KRW-BTC"):
     query = {
         'market': market,
@@ -43,6 +44,7 @@ def get_coin_investablity(market="KRW-BTC"):
     return res.json()
 
 
+# 코인 주문(매수, 매도)
 def order_coin(market_name="KRW-BTC", order_money=0, order_volume=0, type='bid'):
     query = {
         'market': market_name,
@@ -74,15 +76,17 @@ def order_coin(market_name="KRW-BTC", order_money=0, order_volume=0, type='bid')
     print(f'주문결과 ::: {res.json()}')
 
 
+# 코인 10,000원 어치 매수 / 코인 수 만큼 매도
 def order_10000(market_name="KRW-BTC", order_volume=0, type='bid'):
     if type == 'bid':
-        order_money = round(10000 / order_volume / 10) * 10
+        order_money = 10000 / order_volume
     else:
         print(f'대상코인현재정보 ::: {pyupbit.view_candle_min(market_name)}')
         order_money = pyupbit.get_current_coin_price(pyupbit.view_candle_min(market_name))
     order_coin(market_name, order_money, order_volume, type)
 
 
+# 내 계좌에 있는 코인 전부 매도
 def sell_all():
     myinfo_map = pyupbit.get_my_coin_info()
 
@@ -106,6 +110,7 @@ def sell_all():
         )
 
 
+# 거래 가능한 코인 중 가장 좋을 것 같은 코인 조회
 def get_best_coin_name():
     investable_coins_map = {}
     market_codes = pyupbit.all_market_names.view_market_codes()
@@ -128,6 +133,7 @@ def get_best_coin_name():
         return best_coin
 
 
+# 가장 좋을 것 같은 코인 매수
 def order_best_coin(best_coin=''):
     coin_info = pyupbit.view_candle_min(best_coin)
     # 10000원 어치 매수

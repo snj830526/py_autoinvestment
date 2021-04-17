@@ -32,6 +32,7 @@ def get_possible_order_volume(coin_info=[]):
         return float(10000 / unit_price)
 
 
+# 수익률 계산
 def get_profit_rate(current_unit_price=0, buy_unit_price=0):
     if buy_unit_price == 0:
         return 0
