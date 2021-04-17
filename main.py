@@ -94,6 +94,7 @@ def profit_check_and_order():
             best_coin = get_best_coin_name()
             print(f"이번시간에 투자할 코인은? {best_coin}")
             coin_info = pyupbit.view_candle_min(best_coin)
+            # 5100원 어치 매수
             pyupbit.order_5000(
                 market_name=best_coin,
                 order_volume=pyupbit.get_possible_order_volume(coin_info),
@@ -114,11 +115,11 @@ def profit_check_and_order():
                 print(f"거래 할 코인 수-{str(datetime.today())} ::: {available_coin_amount}")
                 if profit_rate <= 85:
                     if krw_balance >= 5000:
-                        pyupbit.order_5000(key, available_coin_amount, 'bid')
+                        pyupbit.order_10000(key, available_coin_amount, 'bid')
                         pyupbit.send_message('#myinvestment', f'[Buying!!-{str(datetime.today())}]' + slack_message1)
                         print('buy!!')
                 elif profit_rate > 100:
-                    pyupbit.order_5000(key, available_coin_amount, 'ask')
+                    pyupbit.order_10000(key, available_coin_amount, 'ask')
                     pyupbit.send_message('#myinvestment', f'[Selling!!-{str(datetime.today())}]' + slack_message1)
                     print('sell!!')
                 else:
