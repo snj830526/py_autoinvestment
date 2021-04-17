@@ -29,7 +29,7 @@ def get_possible_order_volume(coin_info=[]):
     if unit_price == 0:
         return 0
     else:
-        return float(5000 / unit_price)
+        return float(10000 / unit_price)
 
 
 def get_profit_rate(current_unit_price=0, buy_unit_price=0):

@@ -65,12 +65,18 @@ def order_coin(market_name="KRW-BTC", order_money=0, order_volume=0, type='bid')
     authorize_token = 'Bearer {}'.format(jwt_token)
     headers = {"Authorization": authorize_token}
 
+    print(f'현재 주문 금액은? {order_money * order_volume} order_money ::: {order_money} order_volume ::: {order_volume}')
+
     res = requests.post(site_url + "/v1/orders", params=query, headers=headers)
     print(f'주문결과 ::: {res.json()}')
 
 
 def order_10000(market_name="KRW-BTC", order_volume=0, type='bid'):
-    order_money = round(10000 / order_volume / 10) * 10
+    if type == 'bid':
+        order_money = round(10000 / order_volume / 10) * 10
+    else:
+        print(f'대상코인현재정보 ::: {pyupbit.view_candle_min(market_name)}')
+        order_money = pyupbit.get_current_coin_price(pyupbit.view_candle_min(market_name))
     order_coin(market_name, order_money, order_volume, type)
 
 
