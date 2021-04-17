@@ -121,7 +121,8 @@ def get_best_coin_name():
             i = i + 1
         investable_coins_map = sorted(investable_coins_map.items(), reverse=True)
         best_coin = list(investable_coins_map[0])[1]
-        slack_message = f"best_coin ::: {best_coin}"
+        coin_dynamic_rate = list(investable_coins_map[0])[0]
+        slack_message = f"best_coin ::: {best_coin} / change_rate ::: {coin_dynamic_rate}%"
         print(slack_message)
         pyupbit.send_message('myinvestment', slack_message)
         return best_coin

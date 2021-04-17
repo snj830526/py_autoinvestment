@@ -44,6 +44,7 @@ def profit_check_and_order():
         my_investment = pyupbit.get_my_coin_info()
         if my_investment is not None:
             for key in my_investment.keys():
+                target_price = pyupbit.get_target_price_to_buy(key)
                 coin_candle = pyupbit.view_candle_min(key)
                 buy_unit_price = pyupbit.get_my_coin_unit_price(my_investment)
                 krw_balance = pyupbit.get_my_krw_balance(my_investment)
@@ -52,15 +53,19 @@ def profit_check_and_order():
                 profit_rate = pyupbit.get_profit_rate(current_unit_price, buy_unit_price)
                 slack_message1 = f"코인명 ::: {key}, 매수단가 ::: {buy_unit_price}, 현재단가 ::: {current_unit_price}, 수익률 ::: {str(profit_rate)}%"
                 print(slack_message1)
-                if profit_rate <= 99:
+                if target_price >= current_unit_price and 97 >= profit_rate > 95:
                     if krw_balance >= 10000:
                         available_coin_amount = pyupbit.get_possible_order_volume(coin_candle)
                         pyupbit.order_10000(key, available_coin_amount, 'bid')
                         pyupbit.send_message('#myinvestment', f'[Buying!!-{str(datetime.today())}]' + slack_message1)
                         print('buy!!')
-                elif profit_rate > 101.0:
+                elif profit_rate > 105.0:
                     pyupbit.order_10000(key, my_coin_balance, 'ask')
                     pyupbit.send_message('#myinvestment', f'[Selling!!-{str(datetime.today())}]' + slack_message1)
+                    print('sell!!')
+                elif profit_rate < 95:
+                    pyupbit.order_10000(key, my_coin_balance, 'ask')
+                    pyupbit.send_message('#myinvestment', f'[sell_all...-{str(datetime.today())}]' + slack_message1)
                     print('sell!!')
                 else:
                     print('thinking...')

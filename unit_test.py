@@ -50,6 +50,15 @@ def test_sort():
     #    print(key)
 
 
+def test_profit_rate():
+    print('test start')
+    my_investment = pyupbit.get_my_coin_info()
+    current_coin = pyupbit.view_candle_min(list(my_investment.keys())[0])
+    current_coin_price = pyupbit.get_current_coin_price(current_coin)
+    print(f'my_investment ::: {my_investment} / current_coin_info ::: {current_coin_price}')
+    day_candle = pyupbit.view_candle_day('KRW-IQ', 'test')
+    print(f'day ::: {day_candle}')
+
+
 if __name__ == '__main__':
-    test1()
-    test_sort()
+    test_profit_rate()
