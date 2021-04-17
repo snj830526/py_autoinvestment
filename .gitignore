@@ -1,0 +1,4 @@
+config.json
+.idea/*
+venv
+pyupbit/__pycache__/*
