@@ -27,12 +27,12 @@ def get_my_krw_balance(myinfo_map):
 
 
 # 주문 가능 수량
-def get_possible_order_volume(coin_info=[]):
+def get_possible_order_volume(coin_info=[], order_money=10000):
     unit_price = get_current_coin_price(coin_info)
     if unit_price == 0:
         return 0
     else:
-        return float(10000 / unit_price)
+        return float(order_money / unit_price)
 
 
 # 수익률 계산
