@@ -117,7 +117,7 @@ def get_best_coin_name():
             coin = pyupbit.view_candle_day(code, market_names[i])
             if coin is not None:
                 investable_coins_map.update(coin)
-            time.sleep(1)
+            time.sleep(0.3)
             i = i + 1
         sorted(investable_coins_map.items(), reverse=True)
         best_coin = list(investable_coins_map.values())[0]
