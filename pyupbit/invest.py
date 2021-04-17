@@ -5,6 +5,7 @@ from urllib.parse import urlencode
 
 import requests
 import json
+import pyupbit
 
 file = open('config.json')
 config = json.load(file)
@@ -65,8 +66,32 @@ def order_coin(market_name="KRW-BTC", order_money=0, order_volume=0, type='bid')
     headers = {"Authorization": authorize_token}
 
     res = requests.post(site_url + "/v1/orders", params=query, headers=headers)
-    print(f'주문결과 ::: {res}')
+    print(f'주문결과 ::: {res.json()}')
 
 
 def order_5000(market_name="KRW-BTC", order_volume=0, type='bid'):
-    order_coin(market_name, 5000, order_volume, type)
+    order_money = round(5000 / order_volume / 10) * 10
+    order_coin(market_name, order_money, order_volume, type)
+
+
+def sell_all():
+    myinfo_map = pyupbit.get_my_coin_info()
+
+    if myinfo_map is not None:
+        market = pyupbit.get_my_coin_name(myinfo_map)
+        coin_info = pyupbit.view_candle_min(market)
+
+        current_my_coin_price = pyupbit.get_current_coin_price(coin_info)
+        my_coin_amount = pyupbit.get_my_coin_total_amount(myinfo_map)
+
+        order_price = current_my_coin_price
+        order_volume = my_coin_amount
+        type = 'ask'
+
+        # 전량 매도!
+        order_coin(
+            market_name=market,
+            order_money=order_price,
+            order_volume=order_volume,
+            type=type
+        )

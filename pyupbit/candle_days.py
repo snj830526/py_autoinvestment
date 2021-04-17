@@ -23,6 +23,6 @@ def get_rocketboosting_coins(candle_data, market_name):
                     str(d[0]['prev_closing_price']) + ' / change_p : ' + \
                     str(d[0]['change_price'])
         print(coin_info)
-        return str(round(d[0]['change_rate'] * 100, 2)) + ':' + d[0]['market']
+        return {round(d[0]['change_rate'] * 100, 2): d[0]['market']}
     else:
         return None

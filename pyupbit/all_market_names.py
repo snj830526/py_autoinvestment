@@ -8,7 +8,8 @@ def view_market_codes():
     data = response.json()
     arr = []
     for d in data:
-        arr.append(d['market'])
+        if 'USDT' not in d['market'] and 'BTC' not in d['market']:
+            arr.append(d['market'])
     return arr
 
 

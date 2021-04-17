@@ -29,9 +29,14 @@ def get_my_account():
 
 def get_my_coin_info():
     account = get_my_account()
-    market_name = account[1]['unit_currency'] + '-' +account[1]['currency']
-    buy_price = account[1]['avg_buy_price']
-    balance = account[1]['balance']
-    result = {market_name: [buy_price, balance]}
-    print(f"내 계좌 요약 정보 ::: {result}")
-    return result
+    print(f"내 계좌 전체 정보 ::: {account}")
+    if len(account) > 1:
+        krw_balance = account[0]['balance']
+        market_name = account[1]['unit_currency'] + '-' +account[1]['currency']
+        buy_price = account[1]['avg_buy_price']
+        balance = account[1]['balance']
+        result = {market_name: [buy_price, balance, krw_balance]}
+        print(f"내 계좌 요약 정보 ::: {result}")
+        return result
+    else:
+        return None
