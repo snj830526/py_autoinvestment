@@ -4,11 +4,10 @@ import hashlib
 from urllib.parse import urlencode
 
 import requests
-import configparser
+import json
 
-
-config = configparser.ConfigParser()
-config.read('config.json')
+file = open('config.json')
+config = json.load(file)
 
 access_key = config['access_key']
 secret_key = config['secret_key']

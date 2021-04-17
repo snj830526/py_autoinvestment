@@ -1,9 +1,7 @@
 import requests
 import json
-import configparser
-
-config = configparser.ConfigParser()
-config.read('config.json')
+file = open('config.json')
+config = json.load(file)
 
 SLACK_BOT_TOKEN = config['slack_token']
 
