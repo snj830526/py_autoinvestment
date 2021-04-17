@@ -24,43 +24,7 @@ def test_print():
     #    print(d)
 """
 
-def test_candle_min_loop():
-    market_codes = pyupbit.all_market_names.view_market_codes()
-    for code in market_codes:
-        candle_data = pyupbit.view_candle_min(code)
-        print(candle_data)
-        time.sleep(5)
 
-
-def test_order(market="KRW-DOGE"):
-    data = pyupbit.get_coin_investablity(market)
-    account_money = float(data['bid_account']['balance']) - 5000
-    coin_price = float(pyupbit.view_candle_min(market)[0]['trade_price'])
-    coin_count = account_money / coin_price
-    print(account_money, coin_price, round(coin_count, 2))
-    pyupbit.order_coin(market, coin_price, coin_count, 'bid')
-
-
-def test_sort():
-    map = {}
-
-    arr = [
-        {25.53: 'USDT-ETC'},
-        {11.71: 'KRW-IOST'},
-        {8.74: 'KRW-DMT'},
-        {21.8: 'KRW-IQ'},
-        {9.0: 'KRW-QKC'},
-        {17.12: 'KRW-BTT'}
-    ]
-
-    for a in arr:
-        map.update(a)
-    sorted(map.items(), reverse=True)
-    print(f'결과 ::: {map}')
-    keys = list(map.values())[0]
-    print(keys)
-    #for key, value in map.items():
-    #    print(key)
 
 
 def profit_check_and_order():
@@ -88,13 +52,13 @@ def profit_check_and_order():
                 profit_rate = pyupbit.get_profit_rate(current_unit_price, buy_unit_price)
                 slack_message1 = f"코인명 ::: {key}, 매수단가 ::: {buy_unit_price}, 현재단가 ::: {current_unit_price}, 수익률 ::: {str(profit_rate)}%"
                 print(slack_message1)
-                if profit_rate <= 85:
+                if profit_rate <= 99:
                     if krw_balance >= 10000:
                         available_coin_amount = pyupbit.get_possible_order_volume(coin_candle)
                         pyupbit.order_10000(key, available_coin_amount, 'bid')
                         pyupbit.send_message('#myinvestment', f'[Buying!!-{str(datetime.today())}]' + slack_message1)
                         print('buy!!')
-                elif profit_rate > 101:
+                elif profit_rate > 101.0:
                     pyupbit.order_10000(key, my_coin_balance, 'ask')
                     pyupbit.send_message('#myinvestment', f'[Selling!!-{str(datetime.today())}]' + slack_message1)
                     print('sell!!')
