@@ -136,9 +136,11 @@ def get_best_coin_name():
 # 가장 좋을 것 같은 코인 매수
 def order_best_coin(best_coin=''):
     coin_info = pyupbit.view_candle_min(best_coin)
-    # 10000원 어치 매수
-    pyupbit.order_10000(
+    order_volume = pyupbit.get_possible_order_volume(coin_info)
+    # 50000원 어치 매수
+    pyupbit.order_coin(
         market_name=best_coin,
-        order_volume=pyupbit.get_possible_order_volume(coin_info),
+        order_money=50000 / order_volume,
+        order_volume=order_volume,
         type='bid'
     )
