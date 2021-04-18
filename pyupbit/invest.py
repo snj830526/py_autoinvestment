@@ -74,6 +74,7 @@ def order_coin(market_name="KRW-BTC", order_money=0, order_volume=0, type='bid')
 
     res = requests.post(site_url + "/v1/orders", params=query, headers=headers)
     print(f'주문결과 ::: {res.json()}')
+    return res
 
 
 # 코인 10,000원 어치 매수 / 코인 수 만큼 매도
@@ -83,7 +84,7 @@ def order_10000(market_name="KRW-BTC", order_volume=0, type='bid'):
     else:
         print(f'대상코인현재정보 ::: {pyupbit.view_candle_min(market_name)}')
         order_money = pyupbit.get_current_coin_price(pyupbit.view_candle_min(market_name))
-    order_coin(market_name, order_money, order_volume, type)
+    return order_coin(market_name, order_money, order_volume, type)
 
 
 # 내 계좌에 있는 코인 전부 매도
@@ -110,27 +111,34 @@ def sell_all():
         )
 
 
-# 거래 가능한 코인 중 가장 좋을 것 같은 코인 조회
-def get_best_coin_name():
+def get_investable_coin_map(market_codes=[], market_names=[]):
     investable_coins_map = {}
-    market_codes = pyupbit.all_market_names.view_market_codes()
-    market_names = pyupbit.all_market_names.view_market_names()
+    i = 0
+    for code in market_codes:
+        # coin = { 전날 대비 변동률 : 코인 코드 }
+        coin = pyupbit.view_candle_day(code, market_names[i])
+        if coin is not None:
+            investable_coins_map.update(coin)
+        time.sleep(0.3)
+        i = i + 1
+    return investable_coins_map
+
+
+# 거래 가능한 코인 중 가장 좋을 것 같은 코인 조회
+def get_best_coin_name(investable_coins_map={}):
     print('오늘 날짜는? ' + str(datetime.today()))
     while True:
-        i = 0
-        for code in market_codes:
-            coin = pyupbit.view_candle_day(code, market_names[i])
-            if coin is not None:
-                investable_coins_map.update(coin)
-            time.sleep(0.3)
-            i = i + 1
-        investable_coins_map = sorted(investable_coins_map.items(), reverse=True)
-        best_coin = list(investable_coins_map[0])[1]
-        coin_dynamic_rate = list(investable_coins_map[0])[0]
-        slack_message = f"best_coin ::: {best_coin} / change_rate ::: {coin_dynamic_rate}%"
-        print(slack_message)
-        pyupbit.send_message('myinvestment', slack_message)
-        return best_coin
+        if dict(investable_coins_map):
+            # TODO 코인 맵에서 이전 상승률 보다 상승률이 낮은 코인 제거
+            investable_coins_map = sorted(investable_coins_map.items(), reverse=True)
+            best_coin = list(investable_coins_map[0])[1]
+            coin_dynamic_rate = list(investable_coins_map[0])[0]
+            slack_message = f"best_coin ::: {best_coin} / change_rate ::: {coin_dynamic_rate}%"
+            print(slack_message)
+            pyupbit.send_message('#myinvestment', slack_message)
+            return best_coin
+        else:
+            get_best_coin_name(investable_coins_map)
 
 
 # 가장 좋을 것 같은 코인 매수
@@ -140,9 +148,34 @@ def order_best_coin(best_coin=''):
     order_money = (50000 / order_volume)
     print(f'첫 구매 ::: unit_price : {order_money}, amount : {order_volume}')
     # 50,000원 어치 매수
-    pyupbit.order_coin(
+    return pyupbit.order_coin(
         market_name=best_coin,
         order_money=order_money,
         order_volume=order_volume,
         type='bid'
     )
+
+
+def cancel_order(order_uuid=''):
+    query = {
+        'uuid': order_uuid,
+    }
+    query_string = urlencode(query).encode()
+
+    m = hashlib.sha512()
+    m.update(query_string)
+    query_hash = m.hexdigest()
+
+    payload = {
+        'access_key': access_key,
+        'nonce': str(uuid.uuid4()),
+        'query_hash': query_hash,
+        'query_hash_alg': 'SHA512',
+    }
+
+    jwt_token = jwt.encode(payload, secret_key)
+    authorize_token = 'Bearer {}'.format(jwt_token)
+    headers = {"Authorization": authorize_token}
+
+    res = requests.delete(url=site_url + "/v1/orders", json=query, headers=headers)
+    print(f'주문취소결과 ::: {res.json()}')

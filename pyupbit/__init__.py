@@ -5,3 +5,4 @@ from .invest import *
 from .my_account import *
 from .slack_send_message import *
 from .common_utils import *
+from .strategy import *

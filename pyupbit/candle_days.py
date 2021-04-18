@@ -10,6 +10,16 @@ def get_candle_data(market=""):
     return response.json()
 
 
+def get_coin_rate_map(market_codes=[]):
+    result_map = {}
+    for market in market_codes:
+        d = get_candle_data(market)
+        # 전날 대비 변동 률
+        change_rate = pyupbit.get_change_rate(d)
+        result_map.update({market: change_rate})
+    return result_map
+
+
 # 잘 될 것 같은 코인 목록 조회
 def view_candle_day(market="KRW-BTC", market_name=""):
     d = get_candle_data(market)
@@ -25,22 +35,19 @@ def get_rocketboosting_coins(candle_data, market_name):
     target_price = get_target_price_to_buy(market)
     # 코인 현재 단가
     current_price = pyupbit.get_current_coin_price(d)
+    # 전날 대비 변동 률
+    change_rate = pyupbit.get_change_rate(d)
+    coin_info = pyupbit.get_coin_info_with_candle(d, market_name)
     # 현재 코인 단가가 목표가 보다 높고 단가가 1원 이상인 코인만 필터
-    if current_price > target_price and pyupbit.get_today_opening_price(d) > 1:
-        coin_info = '현재가 : ' + str(current_price) + '-' + market + "(" + market_name + "-" + \
-                    str(pyupbit.get_change_rate(d)) + '%' + ")" + ' / opening_p : ' + \
-                    str(pyupbit.get_today_opening_price(d)) + ' / high_p(오늘[어제]) : ' + \
-                    str(pyupbit.get_today_high_price(d)) + '[' + str(pyupbit.get_yesterday_high_price(d)) + '] / low_p(오늘[어제]) : ' + \
-                    str(pyupbit.get_today_low_price(d)) + '[' + str(pyupbit.get_yesterday_low_price(d)) + '] / prev_p : ' + \
-                    str(pyupbit.get_yesterday_close_price(d)) + ' / change_p : ' + \
-                    str(pyupbit.get_change_price(d))
+    if current_price >= target_price and pyupbit.get_today_opening_price(d) > 1:
         print(coin_info)
-        return {pyupbit.get_change_rate(d): market}
+        return {change_rate: market}
     else:
+        #print(f'탈락한 코인 ::: {coin_info}')
         return None
 
 
 # 목표 코인 단가 계산
 def get_target_price_to_buy(market="KRW-BTC"):
     d = get_candle_data(market)
-    return d[0]['opening_price'] + (d[1]['high_price'] - d[1]['low_price']) * 0.5
+    return d[0]['opening_price'] + (d[1]['high_price'] - d[1]['low_price']) * 0.1

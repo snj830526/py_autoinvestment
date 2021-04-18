@@ -31,7 +31,7 @@ def get_my_account():
 # 내가 가진 코인 요약 정보 조회
 def get_my_coin_info():
     account = get_my_account()
-    print(f"내 계좌 전체 정보 ::: {account}")
+    #print(f"내 계좌 전체 정보 ::: {account}")
     if len(account) > 1:
         krw_balance = account[0]['balance']
         market_name = account[1]['unit_currency'] + '-' +account[1]['currency']

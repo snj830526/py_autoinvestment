@@ -88,5 +88,25 @@ def get_yesterday_close_price(candle):
     return candle[0]['prev_closing_price']
 
 
+# 일 캔들에서 값 추출(변동 가격)
 def get_change_price(candle):
     return candle[0]['change_price']
+
+
+# 매수 주문 uuid 추출
+def get_order_bid_uuid(response_json):
+    if 'uuid' in response_json:
+        return response_json["uuid"]
+    else:
+        return None
+
+
+def get_coin_info_with_candle(d, market_name):
+    # 코인 코드
+    market = pyupbit.get_market(d)
+    # 목표 코인 단가( 오늘 시작가 + (어제 고가 - 어제 저가) * 0.5 )
+    target_price = pyupbit.get_target_price_to_buy(market)
+    # 코인 현재 단가
+    current_price = pyupbit.get_current_coin_price(d)
+    coin_info = f"""목표가: {target_price} / 현재가: {str(current_price)} - {market} ({market_name}:{str(pyupbit.get_change_rate(d))}%) opening_p:{str(pyupbit.get_today_opening_price(d))} high_p(오늘[어제]):{str(pyupbit.get_today_high_price(d))}[{str(pyupbit.get_yesterday_high_price(d))}] low_p(오늘[어제]):{str(pyupbit.get_today_low_price(d))}[{str(pyupbit.get_yesterday_low_price(d))}] prev_p:{str(pyupbit.get_yesterday_close_price(d))} change_p:{str(pyupbit.get_change_price(d))}"""
+    return coin_info
