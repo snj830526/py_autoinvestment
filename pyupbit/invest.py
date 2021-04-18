@@ -111,6 +111,7 @@ def sell_all():
         )
 
 
+# 투자해도 될 것 같은 코인 조회
 def get_investable_coin_map(market_codes=[], market_names=[]):
     investable_coins_map = {}
     i = 0
@@ -125,20 +126,47 @@ def get_investable_coin_map(market_codes=[], market_names=[]):
 
 
 # 거래 가능한 코인 중 가장 좋을 것 같은 코인 조회
-def get_best_coin_name(investable_coins_map={}):
+def get_best_coin_name(investable_coins_map={}, prev_coins_map={}):
     print('오늘 날짜는? ' + str(datetime.today()))
     while True:
         if dict(investable_coins_map):
-            # TODO 코인 맵에서 이전 상승률 보다 상승률이 낮은 코인 제거
-            investable_coins_map = sorted(investable_coins_map.items(), reverse=True)
-            best_coin = list(investable_coins_map[0])[1]
-            coin_dynamic_rate = list(investable_coins_map[0])[0]
-            slack_message = f"best_coin ::: {best_coin} / change_rate ::: {coin_dynamic_rate}%"
-            print(slack_message)
-            pyupbit.send_message('#myinvestment', slack_message)
-            return best_coin
+            reverse_new_map = reverse_map(investable_coins_map)
+            print(f'reverse_new_map ::: {reverse_new_map}')
+            if dict(prev_coins_map):
+                reverse_old_map = reverse_map(prev_coins_map)
+                print(f'reverse_old_map ::: {reverse_old_map}')
+                # TODO 코인 맵에서 이전 상승률 보다 상승률이 낮은 코인 제거
+                filtered_map = map_filtering(reverse_old_map, reverse_new_map)
+                print(f'original_map :: {reverse_new_map} / filtered_map :: {filtered_map}')
+                investable_coins_map = reverse_map(filtered_map)
+
+            if dict(investable_coins_map):
+                coins_map = sorted(investable_coins_map.items(), reverse=True)
+                best_coin = list(coins_map[0])[1]
+                coin_dynamic_rate = list(coins_map[0])[0]
+                slack_message = f"best_coin ::: {best_coin} / change_rate ::: {coin_dynamic_rate}%"
+                print(slack_message)
+                pyupbit.send_message('#myinvestment', slack_message)
+                return best_coin
         else:
             get_best_coin_name(investable_coins_map)
+
+
+# map의 key, value 위치 swap
+def reverse_map(old_dict):
+    return dict([(value, key) for key, value in old_dict.items()])
+
+
+# 맵 객체 값으로 필터링(수익률 필터링)
+def map_filtering(original_map, new_map):
+    bad_arr = []
+    for old_key, old_value in original_map.items():
+        new_value = new_map[old_key]
+        if old_value > new_value:
+            bad_arr.append(old_key)
+    for old_key in bad_arr:
+        original_map.pop(old_key, None)
+    return original_map
 
 
 # 가장 좋을 것 같은 코인 매수

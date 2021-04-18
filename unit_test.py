@@ -82,5 +82,26 @@ def test_best_coin():
     print(f'best coin 결과 ::: {best_coin}')
 
 
+def test_map_filtering():
+    original_map = {'KRW-IOST': 4.95, 'KRW-GAS': 8.73, 'KRW-MOC': 5.8, 'KRW-AHT': 11.9, 'KRW-DOGE': 5.19}
+    new_map = {'KRW-IOST': 1.95, 'KRW-GAS': 7.73, 'KRW-MOC': 5.8, 'KRW-AHT': 19.9, 'KRW-DOGE': 1.19}
+
+    bad_arr = []
+    for old_key, old_value in original_map.items():
+        # print(f'key : {old_key}, value : {old_value}')
+        # print(f'new_value : {new_map[old_key]}')
+        new_value = new_map[old_key]
+        if old_value > new_value:
+            print('bad!')
+            bad_arr.append(old_key)
+        else:
+            print('good!!')
+
+    for old_key in bad_arr:
+        original_map.pop(old_key, None)
+
+    print(f'bad_arr ::: {bad_arr}, result ::: {original_map}')
+
+
 if __name__ == '__main__':
-    test_sort()
+    test_map_filtering()

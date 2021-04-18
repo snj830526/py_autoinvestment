@@ -5,11 +5,7 @@ from datetime import datetime
 
 # 계좌에 보유한 코인이 없는 상태로 만들고 -> 매수 시작!
 def init(best_coin=''):
-    print('계좌에 보유한 코인이 없는 상태로 만들고 -> 매수 시작!')
     init_counter = 0
-    # 전 시간에 투자 한 코인 전량 매도
-    if pyupbit.get_my_coin_info() is not None:
-        pyupbit.sell_all()
     # 가장 살만할 것 같은 코인 50,000원 어치 매수
     print(f"이번시간에 투자할 코인은? {best_coin}")
     response = pyupbit.order_best_coin(best_coin)
@@ -17,13 +13,14 @@ def init(best_coin=''):
     if 200 <= response.status_code <= 299:
         # 매수 신청 후 매수 될 때까지 대기
         while pyupbit.get_my_coin_info() is None:
+            time.sleep(1)
             init_counter = init_counter + 1
             print('매수 체결 대기 중...')
-            if init_counter >= 10:
-                init(best_coin)
-            time.sleep(1)
+            if init_counter >= 30:
+                print(f'아직 사지지 않았습니다.')
     else:
         print(f'재 주문 시도...{response.status_code} / {response.json()}')
+        time.sleep(5)
         init(best_coin)
 
 

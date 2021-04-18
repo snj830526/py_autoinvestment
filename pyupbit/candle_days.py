@@ -1,5 +1,6 @@
 import requests
 import pyupbit
+import time
 
 
 # 일 캔들 조회(어제, 오늘)
@@ -10,6 +11,7 @@ def get_candle_data(market=""):
     return response.json()
 
 
+# 코인 변동률 맵 조회(전체)
 def get_coin_rate_map(market_codes=[]):
     result_map = {}
     for market in market_codes:
@@ -17,6 +19,7 @@ def get_coin_rate_map(market_codes=[]):
         # 전날 대비 변동 률
         change_rate = pyupbit.get_change_rate(d)
         result_map.update({market: change_rate})
+        time.sleep(0.2)
     return result_map
 
 
