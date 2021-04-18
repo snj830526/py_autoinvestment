@@ -116,3 +116,21 @@ def get_coin_info_with_candle(d, market_name):
 def get_target_price_to_buy(market="KRW-BTC"):
     d = pyupbit.get_candle_data(market)
     return d[0]['opening_price'] + (d[1]['high_price'] - d[1]['low_price']) * 0.1
+
+
+# map의 key, value 위치 swap
+def reverse_map(old_dict):
+    return dict([(value, key) for key, value in old_dict.items()])
+
+
+# 맵 객체 값으로 필터링(수익률 필터링)
+def map_filtering(original_map, new_map):
+    bad_arr = []
+    for old_key, old_value in original_map.items():
+        if old_key in new_map:
+            new_value = new_map[old_key]
+            if old_value > new_value:
+                bad_arr.append(old_key)
+    for old_key in bad_arr:
+        original_map.pop(old_key, None)
+    return original_map

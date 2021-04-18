@@ -30,6 +30,49 @@ def init(best_coin=''):
         init(best_coin)
 
 
+# 투자해도 될 것 같은 코인 조회
+def get_investable_coin_map(market_codes=[], market_names=[]):
+    investable_coins_map = {}
+    i = 0
+    for code in market_codes:
+        # coin = { 전날 대비 변동률 : 코인 코드 }
+        coin = pyupbit.view_candle_day(code, market_names[i])
+        if coin is not None:
+            investable_coins_map.update(coin)
+        time.sleep(0.3)
+        i = i + 1
+    return investable_coins_map
+
+
+# 거래 가능한 코인 중 가장 좋을 것 같은 코인 조회
+def get_best_coin_name(investable_coins_map={}, prev_coins_map={}):
+    print('오늘 날짜는? ' + str(datetime.today()))
+    while True:
+        if dict(investable_coins_map):
+            reverse_new_map = pyupbit.reverse_map(investable_coins_map)
+            print(f'reverse_new_map ::: {reverse_new_map}')
+            if dict(prev_coins_map):
+                reverse_old_map = pyupbit.reverse_map(prev_coins_map)
+                print(f'reverse_old_map ::: {reverse_old_map}')
+                # 코인 맵에서 이전 상승률 보다 상승률이 낮은 코인 제거
+                filtered_map = pyupbit.map_filtering(reverse_old_map, reverse_new_map)
+                print(f'original_map :: {reverse_new_map} / filtered_map :: {filtered_map}')
+                investable_coins_map = pyupbit.reverse_map(filtered_map)
+
+            if dict(investable_coins_map):
+                coins_map = sorted(investable_coins_map.items(), reverse=True)
+                best_coin = list(coins_map[0])[1]
+                coin_dynamic_rate = list(coins_map[0])[0]
+                slack_message = f"best_coin ::: {best_coin} / change_rate ::: {coin_dynamic_rate}%"
+                print(slack_message)
+                pyupbit.send_message('#myinvestment', slack_message)
+                return best_coin
+        else:
+            print(f'아직 사지지 않았습니다. 30초 후 다시 초기화 작업 시작합니다..')
+            time.sleep(30)
+            return get_best_coin_name(investable_coins_map)
+
+
 # 빡침 스코어 기록기
 def calc_profit_score(rage_score=0, prev_profit_rate=0, current_profit_rate=0):
     """
@@ -41,7 +84,7 @@ def calc_profit_score(rage_score=0, prev_profit_rate=0, current_profit_rate=0):
             rage_score = rage_score + minus_change_rate / 2
         2. 절대 수익률이 100% 보다 낮은 경우는 그냥 97% 미만일 때 매도 처리(빡침 스코어는 계산)
           - 직전 수익률 보다 떨어졌을 때(+)
-            rage_score = rage_score + minus_change_rate
+            rage_score = rage_score + minus_change_rate * 1.5
           - 직전 수익률 보다 올라갔을 때(-)
             rage_score = rage_score + minus_change_rate * 1.5
         3. 빡침 스코어가 마이너스인 경우 0으로 처리
@@ -61,7 +104,7 @@ def calc_profit_score(rage_score=0, prev_profit_rate=0, current_profit_rate=0):
     else:
         # 하락중... (아..)
         if minus_change_rate >= 0:
-            rage_score = rage_score + minus_change_rate
+            rage_score = rage_score + minus_change_rate * 1.5
         # 상승중! (제발!!)
         else:
             rage_score = rage_score + minus_change_rate * 1.5
