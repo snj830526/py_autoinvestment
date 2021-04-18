@@ -35,7 +35,7 @@ def get_rocketboosting_coins(candle_data, market_name):
     # 코인 코드
     market = pyupbit.get_market(d)
     # 목표 코인 단가( 오늘 시작가 + (어제 고가 - 어제 저가) * 0.5 )
-    target_price = get_target_price_to_buy(market)
+    target_price = pyupbit.get_target_price_to_buy(market)
     # 코인 현재 단가
     current_price = pyupbit.get_current_coin_price(d)
     # 전날 대비 변동 률
@@ -47,9 +47,3 @@ def get_rocketboosting_coins(candle_data, market_name):
         return {change_rate: market}
     else:
         return None
-
-
-# 목표 코인 단가 계산
-def get_target_price_to_buy(market="KRW-BTC"):
-    d = get_candle_data(market)
-    return d[0]['opening_price'] + (d[1]['high_price'] - d[1]['low_price']) * 0.1

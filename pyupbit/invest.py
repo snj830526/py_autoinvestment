@@ -77,7 +77,7 @@ def order_coin(market_name="KRW-BTC", order_money=0, order_volume=0, type='bid')
     return res
 
 
-# 코인 10,000원 어치 매수 / 코인 수 만큼 매도
+# 코인 10,000원 어치 매수 / 코인 수 만큼 매도(사용 안함)
 def order_10000(market_name="KRW-BTC", order_volume=0, type='bid'):
     if type == 'bid':
         order_money = 10000 / order_volume
@@ -149,7 +149,9 @@ def get_best_coin_name(investable_coins_map={}, prev_coins_map={}):
                 pyupbit.send_message('#myinvestment', slack_message)
                 return best_coin
         else:
-            get_best_coin_name(investable_coins_map)
+            print(f'아직 사지지 않았습니다. 30초 후 다시 초기화 작업 시작합니다..')
+            time.sleep(30)
+            return get_best_coin_name(investable_coins_map)
 
 
 # map의 key, value 위치 swap
@@ -161,9 +163,10 @@ def reverse_map(old_dict):
 def map_filtering(original_map, new_map):
     bad_arr = []
     for old_key, old_value in original_map.items():
-        new_value = new_map[old_key]
-        if old_value > new_value:
-            bad_arr.append(old_key)
+        if old_key in new_map:
+            new_value = new_map[old_key]
+            if old_value > new_value:
+                bad_arr.append(old_key)
     for old_key in bad_arr:
         original_map.pop(old_key, None)
     return original_map
@@ -174,7 +177,7 @@ def order_best_coin(best_coin=''):
     coin_info = pyupbit.view_candle_min(best_coin)
     order_volume = pyupbit.get_possible_order_volume(coin_info, 50000)
     order_money = (50000 / order_volume)
-    print(f'첫 구매 ::: unit_price : {order_money}, amount : {order_volume}')
+    print(f'잘 될 것 같은 코인 구매 ::: unit_price : {order_money}, amount : {order_volume}')
     # 50,000원 어치 매수
     return pyupbit.order_coin(
         market_name=best_coin,
@@ -186,25 +189,28 @@ def order_best_coin(best_coin=''):
 
 # 주문 취소(동작 하지 않음)
 def cancel_order(order_uuid=''):
-    query = {
-        'uuid': order_uuid,
-    }
-    query_string = urlencode(query).encode()
+    if order_uuid:
+        query = {
+            'uuid': order_uuid,
+        }
+        query_string = urlencode(query).encode()
 
-    m = hashlib.sha512()
-    m.update(query_string)
-    query_hash = m.hexdigest()
+        m = hashlib.sha512()
+        m.update(query_string)
+        query_hash = m.hexdigest()
 
-    payload = {
-        'access_key': access_key,
-        'nonce': str(uuid.uuid4()),
-        'query_hash': query_hash,
-        'query_hash_alg': 'SHA512',
-    }
+        payload = {
+            'access_key': access_key,
+            'nonce': str(uuid.uuid4()),
+            'query_hash': query_hash,
+            'query_hash_alg': 'SHA512',
+        }
 
-    jwt_token = jwt.encode(payload, secret_key)
-    authorize_token = 'Bearer {}'.format(jwt_token)
-    headers = {"Authorization": authorize_token}
+        jwt_token = jwt.encode(payload, secret_key)
+        authorize_token = 'Bearer {}'.format(jwt_token)
+        headers = {"Authorization": authorize_token}
 
-    res = requests.delete(url=site_url + "/v1/orders", params=query, headers=headers)
-    print(f'주문취소결과 ::: {res.json()}')
+        res = requests.delete(site_url + "/v1/order", params=query, headers=headers)
+        print(f'주문취소결과 ::: {res.json()}')
+    else:
+        print(f'주문 uuid ::: {order_uuid} ?!')

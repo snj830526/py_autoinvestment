@@ -110,3 +110,9 @@ def get_coin_info_with_candle(d, market_name):
     current_price = pyupbit.get_current_coin_price(d)
     coin_info = f"""목표가: {target_price} / 현재가: {str(current_price)} - {market} ({market_name}:{str(pyupbit.get_change_rate(d))}%) opening_p:{str(pyupbit.get_today_opening_price(d))} high_p(오늘[어제]):{str(pyupbit.get_today_high_price(d))}[{str(pyupbit.get_yesterday_high_price(d))}] low_p(오늘[어제]):{str(pyupbit.get_today_low_price(d))}[{str(pyupbit.get_yesterday_low_price(d))}] prev_p:{str(pyupbit.get_yesterday_close_price(d))} change_p:{str(pyupbit.get_change_price(d))}"""
     return coin_info
+
+
+# 목표 코인 단가 계산
+def get_target_price_to_buy(market="KRW-BTC"):
+    d = pyupbit.get_candle_data(market)
+    return d[0]['opening_price'] + (d[1]['high_price'] - d[1]['low_price']) * 0.1
