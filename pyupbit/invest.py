@@ -135,7 +135,7 @@ def get_best_coin_name(investable_coins_map={}, prev_coins_map={}):
             if dict(prev_coins_map):
                 reverse_old_map = reverse_map(prev_coins_map)
                 print(f'reverse_old_map ::: {reverse_old_map}')
-                # TODO 코인 맵에서 이전 상승률 보다 상승률이 낮은 코인 제거
+                # 코인 맵에서 이전 상승률 보다 상승률이 낮은 코인 제거
                 filtered_map = map_filtering(reverse_old_map, reverse_new_map)
                 print(f'original_map :: {reverse_new_map} / filtered_map :: {filtered_map}')
                 investable_coins_map = reverse_map(filtered_map)
@@ -184,6 +184,7 @@ def order_best_coin(best_coin=''):
     )
 
 
+# 주문 취소(동작 하지 않음)
 def cancel_order(order_uuid=''):
     query = {
         'uuid': order_uuid,

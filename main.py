@@ -21,7 +21,6 @@ def profit_check_and_order():
     while True:
         # 처음 시작 / 1시간 후 투자 초기화 동작
         if counter % 720 == 0:
-        #if counter % 20 == 0:
             print('Finding the best coin to invest...(It runs once in an hour.)')
             print('계좌에 보유한 코인이 없는 상태로 만들고 -> 매수 시작!')
             # 전 시간에 투자 한 코인 전량 매도

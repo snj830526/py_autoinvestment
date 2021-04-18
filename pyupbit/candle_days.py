@@ -46,7 +46,6 @@ def get_rocketboosting_coins(candle_data, market_name):
         print(coin_info)
         return {change_rate: market}
     else:
-        #print(f'탈락한 코인 ::: {coin_info}')
         return None
 
 

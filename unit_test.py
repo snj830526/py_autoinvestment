@@ -88,8 +88,6 @@ def test_map_filtering():
 
     bad_arr = []
     for old_key, old_value in original_map.items():
-        # print(f'key : {old_key}, value : {old_value}')
-        # print(f'new_value : {new_map[old_key]}')
         new_value = new_map[old_key]
         if old_value > new_value:
             print('bad!')
