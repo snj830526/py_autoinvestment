@@ -18,6 +18,10 @@ def init(best_coin=''):
             print('매수 체결 대기 중...')
             if init_counter >= 30:
                 print(f'아직 사지지 않았습니다.')
+                # 너무 오래 걸리면 주문 취소 후 다시 시도
+                pyupbit.cancel_order(pyupbit.get_order_bid_uuid(response.json()))
+                time.sleep(30)
+                init(best_coin)
     else:
         print(f'재 주문 시도...{response.status_code} / {response.json()}')
         time.sleep(5)
@@ -38,7 +42,7 @@ def calc_profit_score(rage_score=0, prev_profit_rate=0, current_profit_rate=0):
     # 수익률 100% 미만
     else:
         if minus_change_rate >= 0:
-            rage_score = rage_score
+            rage_score = rage_score + minus_change_rate
         else:
             rage_score = rage_score + minus_change_rate
     slack_message = f'현재 점수는 ::: {round(rage_score, 2)} / 변동폭은 ::: {round(-minus_change_rate, 2)}% / 직전 수익률은 ::: {prev_profit_rate}% / 현재 수익률은 ::: {current_profit_rate}%'
@@ -49,14 +53,14 @@ def calc_profit_score(rage_score=0, prev_profit_rate=0, current_profit_rate=0):
     매도 할 타이밍은 스코어가 5점 이상인 경우로 한다.
     1. 절대 수익률이 100% 보다 높은 경우
       - 직전 수익률 보다 떨어졌을 때(+)
-        score = score + minus_change_rate
+        rage_score = rage_score + minus_change_rate
       - 직전 수익률 보다 올라갔을 때(-)
         rage_score = rage_score + minus_change_rate / 2
     2. 절대 수익률이 100% 보다 낮은 경우는 그냥 97% 미만일 때 매도 처리(빡침 스코어는 계산)
       - 직전 수익률 보다 떨어졌을 때(+)
-        score = score + minus_change_rate
+        rage_score = rage_score + minus_change_rate
       - 직전 수익률 보다 올라갔을 때(-)
-        score = score
+        rage_score = rage_score + minus_change_rate
     3. 빡침 스코어가 마이너스인 경우 0으로 처리
     """
     if rage_score < 0:

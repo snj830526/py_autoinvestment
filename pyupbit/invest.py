@@ -206,5 +206,5 @@ def cancel_order(order_uuid=''):
     authorize_token = 'Bearer {}'.format(jwt_token)
     headers = {"Authorization": authorize_token}
 
-    res = requests.delete(url=site_url + "/v1/orders", json=query, headers=headers)
+    res = requests.delete(url=site_url + "/v1/orders", params=query, headers=headers)
     print(f'주문취소결과 ::: {res.json()}')
