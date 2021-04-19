@@ -115,7 +115,7 @@ def get_coin_info_with_candle(d, market_name):
 # 목표 코인 단가 계산
 def get_target_price_to_buy(market="KRW-BTC"):
     d = pyupbit.get_candle_data(market)
-    return d[0]['opening_price'] + (d[1]['high_price'] - d[1]['low_price']) * 0.1
+    return d[0]['opening_price'] + (d[1]['high_price'] - d[1]['low_price']) * 0.5
 
 
 # map의 key, value 위치 swap

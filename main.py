@@ -19,7 +19,7 @@ def profit_check_and_order():
     prev_coins_map = {}
     # 프로그램 시작
     while True:
-        # 처음 시작 / 1시간 후 투자 초기화 동작
+        # 처음 시작 / 1시간 동안 별 소득 없으면 투자 초기화 동작
         if counter % 720 == 0:
             print('Finding the best coin to invest...(It runs once in an hour.)')
             print('계좌에 보유한 코인이 없는 상태로 만들고 -> 매수 시작!')
@@ -46,7 +46,10 @@ def profit_check_and_order():
             investable_coins_map = pyupbit.get_investable_coin_map(all_market_codes, all_market_names)
             best_coin = pyupbit.get_best_coin_name(investable_coins_map, prev_coins_map)
             pyupbit.init(best_coin)
+            # 스코어 초기화
             score = 0
+            # 재시작 카운터 초기화
+            counter = 1
         counter = counter + 1
         # 위의 프로세스는 5초에 1회 동작
         time.sleep(5)

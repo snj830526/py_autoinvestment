@@ -101,5 +101,9 @@ def test_map_filtering():
     print(f'bad_arr ::: {bad_arr}, result ::: {original_map}')
 
 
+def test_process():
+    print('process alive!')
+
+
 if __name__ == '__main__':
-    test_map_filtering()
+    test_process()
