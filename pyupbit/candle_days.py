@@ -44,7 +44,7 @@ def get_rocketboosting_coins(candle_data, market_name):
     # 현재 코인 단가가 목표가 보다 높고 단가가 1원 이상인 코인만 필터
     if current_price >= target_price and pyupbit.get_today_opening_price(d) > 1:
         print(f'대상 : {coin_info}')
-        return {change_rate: market}
+        return {market: change_rate}
     else:
-        print(f'비대상 ::: {coin_info}')
+        #print(f'비대상 ::: {coin_info}')
         return None

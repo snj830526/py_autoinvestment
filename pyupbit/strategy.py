@@ -49,28 +49,37 @@ def get_best_coin_name(investable_coins_map={}, prev_coins_map={}):
     print('오늘 날짜는? ' + str(datetime.today()))
     while True:
         if dict(investable_coins_map):
-            reverse_new_map = pyupbit.reverse_map(investable_coins_map)
-            print(f'reverse_new_map ::: {reverse_new_map}')
+            print(f'original_map ::: {investable_coins_map}')
             if dict(prev_coins_map):
-                reverse_old_map = pyupbit.reverse_map(prev_coins_map)
-                print(f'reverse_old_map ::: {reverse_old_map}')
+                print(f'prev_coins_map ::: {prev_coins_map}')
                 # 코인 맵에서 이전 상승률 보다 상승률이 낮은 코인 제거
-                filtered_map = pyupbit.map_filtering(reverse_old_map, reverse_new_map)
-                print(f'original_map :: {reverse_new_map} / filtered_map :: {filtered_map}')
-                investable_coins_map = pyupbit.reverse_map(filtered_map)
-
+                filtered_map = pyupbit.map_filtering(prev_coins_map, investable_coins_map)
+                print(f'original_map :: {investable_coins_map} / filtered_map :: {filtered_map}')
+                investable_coins_map = filtered_map
             if dict(investable_coins_map):
-                coins_map = sorted(investable_coins_map.items(), reverse=False)
-                best_coin = list(coins_map[0])[1]
-                coin_dynamic_rate = list(coins_map[0])[0]
+                coins_map = sorted(investable_coins_map.items(), reverse=False, key=lambda item: item[1])
+                best_coin = list(coins_map[0])[0]
+                coin_dynamic_rate = list(coins_map[0])[1]
                 slack_message = f"best_coin ::: {best_coin} / change_rate ::: {coin_dynamic_rate}%"
                 print(slack_message)
                 pyupbit.send_message('#myinvestment', slack_message)
                 return best_coin
         else:
-            print(f'아직 사지지 않았습니다. 30초 후 다시 초기화 작업 시작합니다..')
-            time.sleep(30)
-            return get_best_coin_name(investable_coins_map)
+            slack_message = f'살만한 코인이 없습니다.. 1분 후 다시 초기화 작업 시작합니다..'
+            print(slack_message)
+            time.sleep(60)
+            pyupbit.send_message("#myinvestment", slack_message)
+            return recursive_get_investable_coin_map(prev_coins_map)
+
+
+# 살만한 코인이 없는 경우 코인 목록 재 조회
+def recursive_get_investable_coin_map(prev_coins_map={}):
+    # 전체 코인 코드
+    all_market_codes = pyupbit.all_market_names.view_market_codes()
+    # 전체 코인 이름
+    all_market_names = pyupbit.all_market_names.view_market_names()
+    investable_coins_map = get_investable_coin_map(all_market_codes, all_market_names)
+    return get_best_coin_name(investable_coins_map, prev_coins_map)
 
 
 # 빡침 스코어 기록기
