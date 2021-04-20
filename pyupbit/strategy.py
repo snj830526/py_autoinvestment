@@ -112,7 +112,7 @@ def calc_profit_score(rage_score=0, prev_profit_rate=0, current_profit_rate=0):
         # 하락중... (그냥 팔까...)
         if minus_change_rate >= 0:
             rage_score = rage_score + minus_change_rate * 2
-        # 상승중! (기분 좋음)
+        # 상승중! (가즈아!!)
         else:
             rage_score = rage_score + minus_change_rate / 2
     # 수익률 100% 미만
