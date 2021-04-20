@@ -1,6 +1,12 @@
 import pyupbit
 import time
+import json
 from datetime import datetime
+
+file = open('config.json')
+config = json.load(file)
+
+slack_channel = config['slack_channel']
 
 
 # 계좌에 보유한 코인이 없는 상태로 만들고 -> 매수 시작!
@@ -62,13 +68,13 @@ def get_best_coin_name(investable_coins_map={}, prev_coins_map={}):
                 coin_dynamic_rate = list(coins_map[0])[1]
                 slack_message = f"best_coin ::: {best_coin} / change_rate ::: {coin_dynamic_rate}%"
                 print(slack_message)
-                pyupbit.send_message('#myinvestment', slack_message)
+                pyupbit.send_message(slack_channel, slack_message)
                 return best_coin
         else:
             slack_message = f'살만한 코인이 없습니다.. 1분 후 다시 초기화 작업 시작합니다..'
             print(slack_message)
             time.sleep(60)
-            pyupbit.send_message("#myinvestment", slack_message)
+            pyupbit.send_message(slack_channel, slack_message)
             return recursive_get_investable_coin_map(prev_coins_map)
 
 
@@ -120,7 +126,7 @@ def calc_profit_score(rage_score=0, prev_profit_rate=0, current_profit_rate=0):
     slack_message = f'현재 점수는 ::: {round(rage_score, 2)} / 변동폭은 ::: {round(-minus_change_rate, 2)}% / 직전 수익률은 ::: {prev_profit_rate}% / 현재 수익률은 ::: {current_profit_rate}%'
     print(slack_message)
     if rage_score >= 6.5:
-        pyupbit.send_message('#myinvestment', slack_message)
+        pyupbit.send_message(slack_channel, slack_message)
     elif rage_score < 0:
         rage_score = 0
     return rage_score
@@ -157,12 +163,12 @@ def working(market='', my_investment={}, prev_profit_rate=100, score=0):
     # 매도 매수 시점 판단 빡침 스코어 기준으로 변경!
     if score >= 7:
         pyupbit.sell_all()
-        pyupbit.send_message('#myinvestment', f'[빡쳐서 팔았음!!-{str(datetime.today())}]' + slack_message1)
+        pyupbit.send_message(slack_channel, f'[빡쳐서 팔았음!!-{str(datetime.today())}]' + slack_message1)
         print('sell!!')
     # 수익률이 너무 떨어질 것 같을때 매도
-    elif profit_rate < 99:
+    elif profit_rate < 99.5:
         pyupbit.sell_all()
-        pyupbit.send_message('#myinvestment', f'[하락해서 팔았음... -{str(datetime.today())}]' + slack_message1)
+        pyupbit.send_message(slack_channel, f'[하락해서 팔았음... -{str(datetime.today())}]' + slack_message1)
         print('sell...')
     # 그 외 상태일 경우
     else:
