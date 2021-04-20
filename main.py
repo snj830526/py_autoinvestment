@@ -1,12 +1,18 @@
 import time
 import pyupbit
+import json
+
+file = open('config.json')
+config = json.load(file)
+
+slack_channel = config['slack_channel']
 
 
-# 투자!
+# 가즈아!
 def profit_check_and_order():
     # 한시간마다 투자 재시작 시키기 위한 카운터
     counter = 0
-    # 수익률
+    # 직전 수익률
     prev_profit_rate = 100
     # 수익률스코어
     score = 0
@@ -16,6 +22,7 @@ def profit_check_and_order():
     all_market_names = pyupbit.all_market_names.view_market_names()
     # 투자 가능한 코인 맵
     investable_coins_map = {}
+    # 이전에 조회 한 투자할만한 코인 맵
     prev_coins_map = {}
     # 프로그램 시작
     while True:
@@ -29,6 +36,10 @@ def profit_check_and_order():
             if dict(investable_coins_map):
                 prev_coins_map = investable_coins_map
             investable_coins_map = pyupbit.get_investable_coin_map(all_market_codes, all_market_names)
+            pyupbit.send_message(slack_channel, f"""
+                현재코인수익률 ::: {investable_coins_map}
+                직전코인수익률 ::: {prev_coins_map}
+            """)
             best_coin = pyupbit.get_best_coin_name(investable_coins_map, prev_coins_map)
             pyupbit.init(best_coin)
             score = 0

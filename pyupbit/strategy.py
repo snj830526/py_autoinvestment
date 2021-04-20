@@ -166,7 +166,7 @@ def working(market='', my_investment={}, prev_profit_rate=100, score=0):
         pyupbit.send_message(slack_channel, f'[빡쳐서 팔았음!!-{str(datetime.today())}]' + slack_message1)
         print('sell!!')
     # 수익률이 너무 떨어질 것 같을때 매도
-    elif profit_rate < 99.5:
+    elif profit_rate < 99.3:
         pyupbit.sell_all()
         pyupbit.send_message(slack_channel, f'[하락해서 팔았음... -{str(datetime.today())}]' + slack_message1)
         print('sell...')
