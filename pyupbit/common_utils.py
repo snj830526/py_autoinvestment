@@ -3,7 +3,7 @@ import pyupbit
 
 # 분 단위 코인정보로 현재 코인 단가 추출(매입, 매도 시 코인 단가 추출용 - 0.01% 싸게 구매해보기!)
 def get_current_coin_price(coin_info=[]):
-    return float(coin_info[0]['trade_price']) 
+    return float(coin_info[0]['trade_price'])
 
 
 # 내가 소유 한 코인 이름

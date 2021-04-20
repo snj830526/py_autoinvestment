@@ -119,7 +119,7 @@ def calc_profit_score(rage_score=0, prev_profit_rate=0, current_profit_rate=0):
     else:
         # 하락중... (아..)
         if minus_change_rate >= 0:
-            rage_score = rage_score + minus_change_rate * 2
+            rage_score = rage_score + minus_change_rate * 1
         # 상승중! (제발!!)
         else:
             rage_score = rage_score + minus_change_rate * 1.5
@@ -166,7 +166,7 @@ def working(market='', my_investment={}, prev_profit_rate=100, score=0):
         pyupbit.send_message(slack_channel, f'[빡쳐서 팔았음!!-{str(datetime.today())}]' + slack_message1)
         print('sell!!')
     # 수익률이 너무 떨어질 것 같을때 매도
-    elif profit_rate < 99:
+    elif profit_rate < 95:
         pyupbit.sell_all()
         pyupbit.send_message(slack_channel, f'[하락해서 팔았음... -{str(datetime.today())}]' + slack_message1)
         print('sell...')
