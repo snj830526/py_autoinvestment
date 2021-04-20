@@ -35,11 +35,14 @@ def profit_check_and_order():
                 pyupbit.sell_all()
             if dict(investable_coins_map):
                 prev_coins_map = investable_coins_map
+            else:
+                prev_coins_map = pyupbit.get_investable_coin_map(all_market_codes, all_market_names)
             investable_coins_map = pyupbit.get_investable_coin_map(all_market_codes, all_market_names)
-            pyupbit.send_message(slack_channel, f"""
+            slack_message = f"""
                 현재코인수익률 ::: {investable_coins_map}
                 직전코인수익률 ::: {prev_coins_map}
-            """)
+            """
+            pyupbit.send_message(slack_channel, slack_message)
             best_coin = pyupbit.get_best_coin_name(investable_coins_map, prev_coins_map)
             pyupbit.init(best_coin)
             score = 0
@@ -54,7 +57,14 @@ def profit_check_and_order():
             # 내 계좌에 코인이 없으면 다시 50000원 어치 매수
             if dict(investable_coins_map):
                 prev_coins_map = investable_coins_map
+            else:
+                prev_coins_map = pyupbit.get_investable_coin_map(all_market_codes, all_market_names)
             investable_coins_map = pyupbit.get_investable_coin_map(all_market_codes, all_market_names)
+            slack_message = f"""
+                현재코인수익률 ::: {investable_coins_map}
+                직전코인수익률 ::: {prev_coins_map}
+            """
+            pyupbit.send_message(slack_channel, slack_message)
             best_coin = pyupbit.get_best_coin_name(investable_coins_map, prev_coins_map)
             pyupbit.init(best_coin)
             # 스코어 초기화

@@ -3,7 +3,7 @@ import pyupbit
 
 # 분 단위 코인정보로 현재 코인 단가 추출(매입, 매도 시 코인 단가 추출용 - 0.01% 싸게 구매해보기!)
 def get_current_coin_price(coin_info=[]):
-    return float(coin_info[0]['trade_price']) * 0.99
+    return float(coin_info[0]['trade_price']) 
 
 
 # 내가 소유 한 코인 이름
@@ -132,5 +132,5 @@ def map_filtering(original_map, new_map):
             if old_value > new_value:
                 bad_arr.append(old_key)
     for old_key in bad_arr:
-        original_map.pop(old_key, None)
-    return original_map
+        new_map.pop(old_key, None)
+    return new_map

@@ -58,7 +58,7 @@ def get_best_coin_name(investable_coins_map={}, prev_coins_map={}):
             print(f'original_map ::: {investable_coins_map}')
             if dict(prev_coins_map):
                 print(f'prev_coins_map ::: {prev_coins_map}')
-                # 코인 맵에서 이전 상승률 보다 상승률이 낮은 코인 제거
+                # 코인 맵에서 이전 상승률 보다 상승률이 낮은 코인 제거(반대로 테스트)
                 filtered_map = pyupbit.map_filtering(prev_coins_map, investable_coins_map)
                 print(f'original_map :: {investable_coins_map} / filtered_map :: {filtered_map}')
                 investable_coins_map = filtered_map
@@ -111,7 +111,7 @@ def calc_profit_score(rage_score=0, prev_profit_rate=0, current_profit_rate=0):
     if current_profit_rate >= 100:
         # 하락중... (그냥 팔까...)
         if minus_change_rate >= 0:
-            rage_score = rage_score + minus_change_rate * 2
+            rage_score = rage_score + minus_change_rate * 3
         # 상승중! (가즈아!!)
         else:
             rage_score = rage_score + minus_change_rate / 2
@@ -166,7 +166,7 @@ def working(market='', my_investment={}, prev_profit_rate=100, score=0):
         pyupbit.send_message(slack_channel, f'[빡쳐서 팔았음!!-{str(datetime.today())}]' + slack_message1)
         print('sell!!')
     # 수익률이 너무 떨어질 것 같을때 매도
-    elif profit_rate < 99.3:
+    elif profit_rate < 99:
         pyupbit.sell_all()
         pyupbit.send_message(slack_channel, f'[하락해서 팔았음... -{str(datetime.today())}]' + slack_message1)
         print('sell...')
