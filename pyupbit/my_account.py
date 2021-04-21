@@ -1,29 +1,21 @@
 import uuid
 import jwt
 import requests
-import json
-
-
-file = open('config.json')
-config = json.load(file)
-
-access_key = config['access_key']
-secret_key = config['secret_key']
-site_url = config['site_url']
+import pyupbit
 
 
 # 내 계좌 정보 조회
 def get_my_account():
     payLoad = {
-        'access_key': access_key,
+        'access_key': pyupbit.get_access_key(),
         'nonce': str(uuid.uuid4())
     }
 
-    jwt_token = jwt.encode(payLoad, secret_key)
+    jwt_token = jwt.encode(payLoad, pyupbit.get_secret_key())
     authorized_token = 'Bearer {}'.format(jwt_token)
     headers = {'Authorization': authorized_token}
 
-    response = requests.request("GET", site_url + '/v1/accounts', headers=headers)
+    response = requests.request("GET", pyupbit.get_site_url() + '/v1/accounts', headers=headers)
 
     return response.json()
 

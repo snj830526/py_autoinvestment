@@ -101,37 +101,14 @@ def get_order_bid_uuid(response_json):
         return None
 
 
-def get_coin_info_with_candle(d, market_name):
-    # 코인 코드
-    market = pyupbit.get_market(d)
-    # 목표 코인 단가( 오늘 시작가 + (어제 고가 - 어제 저가) * 0.5 )
-    target_price = pyupbit.get_target_price_to_buy(market)
-    # 코인 현재 단가
-    current_price = pyupbit.get_current_coin_price(d)
-    coin_info = f"""목표가: {target_price} / 현재가: {str(current_price)} - {market} ({market_name}:{str(pyupbit.get_change_rate(d))}%) opening_p:{str(pyupbit.get_today_opening_price(d))} high_p(오늘[어제]):{str(pyupbit.get_today_high_price(d))}[{str(pyupbit.get_yesterday_high_price(d))}] low_p(오늘[어제]):{str(pyupbit.get_today_low_price(d))}[{str(pyupbit.get_yesterday_low_price(d))}] prev_p:{str(pyupbit.get_yesterday_close_price(d))} change_p:{str(pyupbit.get_change_price(d))}"""
-    return coin_info
-
-
-# 목표 코인 단가 계산
-def get_target_price_to_buy(market="KRW-BTC"):
-    d = pyupbit.get_candle_data(market)
-    return d[0]['opening_price'] + (d[1]['high_price'] - d[1]['low_price']) * 0.5
-
-
 # map의 key, value 위치 swap
 def reverse_map(old_dict):
     return dict([(value, key) for key, value in old_dict.items()])
 
 
-# 맵 객체 값으로 나쁜 코인 필터링(수익률 필터링)
-def map_filtering(original_map, new_map):
-    bad_arr = []
-    for old_key, old_value in original_map.items():
-        if old_key in new_map:
-            new_value = new_map[old_key]
-            if old_value >= new_value:
-                bad_arr.append(old_key)
-    print(f'나쁜코인목록 ::: {bad_arr}')
-    for old_key in bad_arr:
-        new_map.pop(old_key, None)
-    return new_map
+# 지난시간에 투자할만한 맵 셋팅
+def get_prev_dict(investable_map, all_market_codes, all_market_names):
+    if dict(investable_map):
+        return investable_map
+    else:
+        return pyupbit.get_investable_coin_map(all_market_codes, all_market_names)
