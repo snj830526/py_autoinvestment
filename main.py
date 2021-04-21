@@ -10,6 +10,8 @@ def profit_check_and_order():
     prev_profit_rate = 100
     # 수익률스코어
     score = 0
+    # 마이너스 체험 여부
+    has_minus_exp = False
     # 전체 코인 코드
     all_market_codes = pyupbit.all_market_names.view_market_codes()
     # 전체 코인 이름
@@ -35,9 +37,10 @@ def profit_check_and_order():
         my_investment = pyupbit.get_my_coin_info()
         if my_investment is not None:
             for market in my_investment.keys():
-                strategy_report_arr = pyupbit.working(market, my_investment, prev_profit_rate, score)
+                strategy_report_arr = pyupbit.working(market, my_investment, prev_profit_rate, score, has_minus_exp)
                 prev_profit_rate = strategy_report_arr[0]
                 score = strategy_report_arr[1]
+                has_minus_exp = strategy_report_arr[2]
         else:
             # 내 계좌에 코인이 없으면 다시 20000원 어치 매수
             pyupbit.init_prepairing(investable_coins_map, all_market_codes, all_market_names)

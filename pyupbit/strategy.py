@@ -140,7 +140,7 @@ def calc_profit_score(rage_score=0, prev_profit_rate=0, current_profit_rate=0):
 
 
 # 매도 / 매수 메인 로직
-def working(market='', my_investment={}, prev_profit_rate=100, score=0):
+def working(market='', my_investment={}, prev_profit_rate=100, score=0, has_minus_exp=False):
     # 매수 목표 가격 조회
     target_price = pyupbit.get_target_price_to_buy(market)
     # 해당 코인의 현재 상태(분 캔들) 조회
@@ -159,29 +159,38 @@ def working(market='', my_investment={}, prev_profit_rate=100, score=0):
     score = calc_profit_score(score, prev_profit_rate, profit_rate)
     slack_message1 = f"코인명 ::: {market}(현재빡침점수 : {round(score, 2)}), 매수단가 ::: {buy_unit_price}, 현재단가 ::: {current_unit_price}, 수익률 ::: {str(profit_rate)}%"
     print(slack_message1)
-    # 매수할 만 하고 코인 단가가 내가 샀을때 보다 살짝 떨어져 있을 때 추가 매수 -> 일단 막기!!
-    # if target_price >= current_unit_price and 99 >= profit_rate >= 97:
-        # if krw_balance >= 10000:
-            # 추가 매수 기능 막음
-            # available_coin_amount = pyupbit.get_possible_order_volume(coin_candle, 10000)
-            # pyupbit.order_10000(market, available_coin_amount, 'bid')
-            # pyupbit.send_message('#myinvestment', f'[Buying!!-{str(datetime.today())}]' + slack_message1)
-    #    print('buy!!')
-    # 매도 매수 시점 판단 빡침 스코어 기준으로 변경!
-    if score > 7:
+    if profit_rate < 100:
+        has_minus_exp = True
+    # 수익률 한번이라도 100% 미만인 경우 수익률 기준으로 매도 결정
+    if has_minus_exp and profit_rate > 100:
         pyupbit.sell_all()
-        pyupbit.send_message(pyupbit.get_slack_channel(), f'[빡쳐서 팔았음!!-{str(datetime.today())}]' + slack_message1)
+        pyupbit.send_message(pyupbit.get_slack_channel(), f'[구사일생으로 팔았음.-{str(datetime.today())}]' + slack_message1)
         print('sell!!')
-    # 수익률이 너무 떨어질 것 같을때 매도
-    elif profit_rate < 98:
-        pyupbit.sell_all()
-        pyupbit.send_message(pyupbit.get_slack_channel(), f'[하락해서 팔았음... -{str(datetime.today())}]' + slack_message1)
-        print('sell...')
-    # 그 외 상태일 경우
     else:
-        print('thinking...')
+        # 매수할 만 하고 코인 단가가 내가 샀을때 보다 살짝 떨어져 있을 때 추가 매수 -> 일단 막기!!
+        # if target_price >= current_unit_price and 99 >= profit_rate >= 97:
+        # if krw_balance >= 10000:
+        # 추가 매수 기능 막음
+        # available_coin_amount = pyupbit.get_possible_order_volume(coin_candle, 10000)
+        # pyupbit.order_10000(market, available_coin_amount, 'bid')
+        # pyupbit.send_message('#myinvestment', f'[Buying!!-{str(datetime.today())}]' + slack_message1)
+        #    print('buy!!')
+        # 매도 매수 시점 판단 빡침 스코어 기준으로 변경!
+        if score > 7:
+            pyupbit.sell_all()
+            pyupbit.send_message(pyupbit.get_slack_channel(), f'[빡쳐서 팔았음!!-{str(datetime.today())}]' + slack_message1)
+            print('sell!!')
+        # 수익률이 너무 떨어질 것 같을때 매도
+        elif profit_rate < 98:
+            pyupbit.sell_all()
+            pyupbit.send_message(pyupbit.get_slack_channel(),
+                                 f'[하락해서 팔았음... -{str(datetime.today())}]' + slack_message1)
+            print('sell...')
+        # 그 외 상태일 경우
+        else:
+            print('thinking...')
     # 수익률, 스코어 반환
-    return [profit_rate, score]
+    return [profit_rate, score, has_minus_exp]
 
 
 # 잘 될 것 같은 코인 계산
