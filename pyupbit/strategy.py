@@ -14,7 +14,7 @@ def init(best_coin=''):
     init_counter = 0
     print(f"이번시간에 투자할 코인은? {best_coin}")
     # 가장 살만할 것 같은 코인 50,000원 어치 매수
-    response = pyupbit.order_best_coin(best_coin)
+    response = pyupbit.order_best_coin(best_coin, 20_000)
     print(f'주문 결과 ::: {response} / uuid ::: {pyupbit.get_order_bid_uuid(response.json())}')
     # 주문 성공 시 매수 완료 될 때 까지 대기
     if 200 <= response.status_code <= 299:
@@ -119,10 +119,10 @@ def calc_profit_score(rage_score=0, prev_profit_rate=0, current_profit_rate=0):
     else:
         # 하락중... (아..)
         if minus_change_rate >= 0:
-            rage_score = rage_score + minus_change_rate * 1
+            rage_score = rage_score + minus_change_rate * 2
         # 상승중! (제발!!)
         else:
-            rage_score = rage_score + minus_change_rate * 1.5
+            rage_score = rage_score + minus_change_rate * 2
     slack_message = f'현재 점수는 ::: {round(rage_score, 2)} / 변동폭은 ::: {round(-minus_change_rate, 2)}% / 직전 수익률은 ::: {prev_profit_rate}% / 현재 수익률은 ::: {current_profit_rate}%'
     print(slack_message)
     if rage_score >= 6.5:
@@ -161,12 +161,12 @@ def working(market='', my_investment={}, prev_profit_rate=100, score=0):
             # pyupbit.send_message('#myinvestment', f'[Buying!!-{str(datetime.today())}]' + slack_message1)
     #    print('buy!!')
     # 매도 매수 시점 판단 빡침 스코어 기준으로 변경!
-    if score >= 7:
+    if score > 7:
         pyupbit.sell_all()
         pyupbit.send_message(slack_channel, f'[빡쳐서 팔았음!!-{str(datetime.today())}]' + slack_message1)
         print('sell!!')
     # 수익률이 너무 떨어질 것 같을때 매도
-    elif profit_rate < 95:
+    elif profit_rate < 98:
         pyupbit.sell_all()
         pyupbit.send_message(slack_channel, f'[하락해서 팔았음... -{str(datetime.today())}]' + slack_message1)
         print('sell...')

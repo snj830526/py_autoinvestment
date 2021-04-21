@@ -123,14 +123,15 @@ def reverse_map(old_dict):
     return dict([(value, key) for key, value in old_dict.items()])
 
 
-# 맵 객체 값으로 필터링(수익률 필터링)
+# 맵 객체 값으로 나쁜 코인 필터링(수익률 필터링)
 def map_filtering(original_map, new_map):
     bad_arr = []
     for old_key, old_value in original_map.items():
         if old_key in new_map:
             new_value = new_map[old_key]
-            if old_value > new_value:
+            if old_value >= new_value:
                 bad_arr.append(old_key)
+    print(f'나쁜코인목록 ::: {bad_arr}')
     for old_key in bad_arr:
         new_map.pop(old_key, None)
     return new_map
