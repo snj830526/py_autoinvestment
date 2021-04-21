@@ -1,11 +1,5 @@
 import time
 import pyupbit
-import json
-
-file = open('config.json')
-config = json.load(file)
-
-slack_channel = config['slack_channel']
 
 
 # 가즈아!
@@ -33,18 +27,9 @@ def profit_check_and_order():
             # 전 시간에 투자 한 코인 전량 매도
             if pyupbit.get_my_coin_info() is not None:
                 pyupbit.sell_all()
-            if dict(investable_coins_map):
-                prev_coins_map = investable_coins_map
-            else:
-                prev_coins_map = pyupbit.get_investable_coin_map(all_market_codes, all_market_names)
-            investable_coins_map = pyupbit.get_investable_coin_map(all_market_codes, all_market_names)
-            slack_message = f"""
-                현재코인수익률 ::: {investable_coins_map}
-                직전코인수익률 ::: {prev_coins_map}
-            """
-            pyupbit.send_message(slack_channel, slack_message)
-            best_coin = pyupbit.get_best_coin_name(investable_coins_map, prev_coins_map)
-            pyupbit.init(best_coin)
+            # 코인 20000원 어치 매수
+            pyupbit.init_prepairing(investable_coins_map, all_market_codes, all_market_names)
+            # 스코어 초기화
             score = 0
         # 매수 한 투자 정보 조회
         my_investment = pyupbit.get_my_coin_info()
@@ -54,19 +39,8 @@ def profit_check_and_order():
                 prev_profit_rate = strategy_report_arr[0]
                 score = strategy_report_arr[1]
         else:
-            # 내 계좌에 코인이 없으면 다시 50000원 어치 매수
-            if dict(investable_coins_map):
-                prev_coins_map = investable_coins_map
-            else:
-                prev_coins_map = pyupbit.get_investable_coin_map(all_market_codes, all_market_names)
-            investable_coins_map = pyupbit.get_investable_coin_map(all_market_codes, all_market_names)
-            slack_message = f"""
-                현재코인수익률 ::: {investable_coins_map}
-                직전코인수익률 ::: {prev_coins_map}
-            """
-            pyupbit.send_message(slack_channel, slack_message)
-            best_coin = pyupbit.get_best_coin_name(investable_coins_map, prev_coins_map)
-            pyupbit.init(best_coin)
+            # 내 계좌에 코인이 없으면 다시 20000원 어치 매수
+            pyupbit.init_prepairing(investable_coins_map, all_market_codes, all_market_names)
             # 스코어 초기화
             score = 0
             # 재시작 카운터 초기화

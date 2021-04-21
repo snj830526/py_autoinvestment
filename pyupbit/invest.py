@@ -4,16 +4,7 @@ import hashlib
 from urllib.parse import urlencode
 
 import requests
-import json
 import pyupbit
-
-
-file = open('config.json')
-config = json.load(file)
-
-access_key = config['access_key']
-secret_key = config['secret_key']
-site_url = config['site_url']
 
 
 # 코인이 투자 가능한 상태인지 조회
@@ -27,17 +18,17 @@ def get_coin_investablity(market="KRW-BTC"):
     query_hash = m.hexdigest()
 
     payload = {
-        'access_key': access_key,
+        'access_key': pyupbit.get_access_key(),
         'nonce': str(uuid.uuid4()),
         'query_hash': query_hash,
         'query_hash_alg': 'SHA512',
     }
 
-    jwt_token = jwt.encode(payload, secret_key)
+    jwt_token = jwt.encode(payload, pyupbit.get_secret_key())
     authorize_token = 'Bearer {}'.format(jwt_token)
     headers = {"Authorization": authorize_token}
 
-    res = requests.get(site_url + "/v1/orders/chance", params=query, headers=headers)
+    res = requests.get(pyupbit.get_site_url() + "/v1/orders/chance", params=query, headers=headers)
 
     return res.json()
 
@@ -58,31 +49,31 @@ def order_coin(market_name="KRW-BTC", order_money=0, order_volume=0, type='bid')
     query_hash = m.hexdigest()
 
     payload = {
-        'access_key': access_key,
+        'access_key': pyupbit.get_access_key(),
         'nonce': str(uuid.uuid4()),
         'query_hash': query_hash,
         'query_hash_alg': 'SHA512',
     }
 
-    jwt_token = jwt.encode(payload, secret_key)
+    jwt_token = jwt.encode(payload, pyupbit.get_secret_key())
     authorize_token = 'Bearer {}'.format(jwt_token)
     headers = {"Authorization": authorize_token}
 
     print(f'현재 주문 금액은? {order_money * order_volume} order_money ::: {order_money} order_volume ::: {order_volume}')
 
-    res = requests.post(site_url + "/v1/orders", params=query, headers=headers)
+    res = requests.post(pyupbit.get_site_url() + "/v1/orders", params=query, headers=headers)
     print(f'주문결과 ::: {res.json()}')
     return res
 
 
 # 코인 10,000원 어치 매수 / 코인 수 만큼 매도(사용 안함)
-def order_10000(market_name="KRW-BTC", order_volume=0, type='bid'):
-    if type == 'bid':
+def order_10000(market_name="KRW-BTC", order_volume=0, order_type='bid'):
+    if order_type == 'bid':
         order_money = 10000 / order_volume
     else:
         print(f'대상코인현재정보 ::: {pyupbit.view_candle_min(market_name)}')
         order_money = pyupbit.get_current_coin_price(pyupbit.view_candle_min(market_name))
-    return order_coin(market_name, order_money, order_volume, type)
+    return order_coin(market_name, order_money, order_volume, order_type)
 
 
 # 내 계좌에 있는 코인 전부 매도
@@ -98,14 +89,14 @@ def sell_all():
 
         order_price = current_my_coin_price
         order_volume = my_coin_amount
-        type = 'ask'
+        order_type = 'ask'
 
         # 전량 매도!
         order_coin(
             market_name=market,
             order_money=order_price,
             order_volume=order_volume,
-            type=type
+            type=order_type
         )
 
 
@@ -137,17 +128,17 @@ def cancel_order(order_uuid=''):
         query_hash = m.hexdigest()
 
         payload = {
-            'access_key': access_key,
+            'access_key': pyupbit.get_access_key(),
             'nonce': str(uuid.uuid4()),
             'query_hash': query_hash,
             'query_hash_alg': 'SHA512',
         }
 
-        jwt_token = jwt.encode(payload, secret_key)
+        jwt_token = jwt.encode(payload, pyupbit.get_secret_key())
         authorize_token = 'Bearer {}'.format(jwt_token)
         headers = {"Authorization": authorize_token}
 
-        res = requests.delete(site_url + "/v1/order", params=query, headers=headers)
+        res = requests.delete(pyupbit.get_site_url() + "/v1/order", params=query, headers=headers)
         print(f'주문취소결과 ::: {res.json()}')
     else:
         print(f'주문 uuid ::: {order_uuid} ?!')
