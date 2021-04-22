@@ -105,5 +105,31 @@ def test_process():
     print('process alive!')
 
 
+def test_init():
+    print('init test')
+    order_money = 20_000
+    my_coin_dict = pyupbit.get_my_coin_info()
+    coin_name = ''
+    for key, value in my_coin_dict.items():
+        coin_name = key
+    unit_price = my_coin_dict[coin_name][0]
+    quantity = my_coin_dict[coin_name][1]
+    coin_value = float(unit_price) * float(quantity)
+    print(f'코인 단가 : {unit_price}, 수량 : {quantity}, 가치 : {round(float(unit_price) * float(quantity), 2)}')
+    # 분단위 캔들
+    coin_info = pyupbit.view_candle_min(coin_name)
+    # 내가 매수 한 코인 단가
+    buy_unit_price = pyupbit.get_my_coin_unit_price(my_coin_dict)
+    # 현재 코인 단가
+    current_unit_price = pyupbit.get_current_coin_price(coin_info)
+    # 수익률(100%가 매수 시점 단가)
+    profit_rate = pyupbit.get_profit_rate(current_unit_price, buy_unit_price)
+    print(f'매수시 코인 단가 : {buy_unit_price}, 현재코인단가 : {current_unit_price}, 수익률 : {profit_rate}')
+    if profit_rate > 100:
+        print('팔기')
+    else:
+        print('버티기')
+
+
 if __name__ == '__main__':
-    test_process()
+    test_init()

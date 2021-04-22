@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 # 초기화 준비
-def init_prepairing(investable_coins_map, all_market_codes, all_market_names):
+def init_prepairing(investable_coins_map, all_market_codes, all_market_names, order_money):
     prev_coins_map = pyupbit.get_prev_dict(investable_coins_map, all_market_codes, all_market_names)
     investable_coins_map = get_investable_coin_map(all_market_codes, all_market_names)
     slack_message = f"""
@@ -13,15 +13,15 @@ def init_prepairing(investable_coins_map, all_market_codes, all_market_names):
                 """
     pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
     best_coin = get_best_coin_name(investable_coins_map, prev_coins_map)
-    init(best_coin)
+    init(best_coin, order_money)
 
 
 # 계좌에 보유한 코인이 없는 상태로 만들고 -> 매수 시작!
-def init(best_coin=''):
+def init(best_coin='', order_money=0):
     init_counter = 0
     print(f"이번시간에 투자할 코인은? {best_coin}")
     # 가장 살만할 것 같은 코인 50,000원 어치 매수
-    response = pyupbit.order_best_coin(best_coin, 20_000)
+    response = pyupbit.order_best_coin(best_coin, order_money)
     print(f'주문 결과 ::: {response} / uuid ::: {pyupbit.get_order_bid_uuid(response.json())}')
     # 주문 성공 시 매수 완료 될 때 까지 대기
     if 200 <= response.status_code <= 299:
@@ -35,12 +35,12 @@ def init(best_coin=''):
                 # 너무 오래 걸리면 주문 취소 후 다시 시도(주문 취소 동작 하지 않음)
                 pyupbit.cancel_order(pyupbit.get_order_bid_uuid(response.json()))
                 time.sleep(30)
-                init(best_coin)
+                init(best_coin, order_money)
     # 주문 실패 시 재 주문 시도(10초 후)
     else:
         print(f'재 주문 시도(10초 후 다시 초기화 작업 시작합니다.)...{response.status_code} / {response.json()}')
         time.sleep(10)
-        init(best_coin)
+        init(best_coin, order_money)
 
 
 # 투자해도 될 것 같은 코인 조회
@@ -141,16 +141,14 @@ def calc_profit_score(rage_score=0, prev_profit_rate=0, current_profit_rate=0):
 
 # 매도 / 매수 메인 로직
 def working(market='', my_investment={}, prev_profit_rate=100, score=0, has_minus_exp=False):
-    # 매수 목표 가격 조회
-    target_price = pyupbit.get_target_price_to_buy(market)
     # 해당 코인의 현재 상태(분 캔들) 조회
     coin_candle = pyupbit.view_candle_min(market)
     # 내가 매수 한 코인 단가
     buy_unit_price = pyupbit.get_my_coin_unit_price(my_investment)
     # 내 계좌에 남은 현금
-    krw_balance = pyupbit.get_my_krw_balance(my_investment)
+    #krw_balance = pyupbit.get_my_krw_balance(my_investment)
     # 내 계좌에 남은 코인 수
-    my_coin_balance = pyupbit.get_my_coin_total_amount(my_investment)
+    #my_coin_balance = pyupbit.get_my_coin_total_amount(my_investment)
     # 현재 코인 단가
     current_unit_price = pyupbit.get_current_coin_price(coin_candle)
     # 수익률(100%가 매수 시점 단가)
@@ -162,7 +160,7 @@ def working(market='', my_investment={}, prev_profit_rate=100, score=0, has_minu
     if profit_rate < 100:
         has_minus_exp = True
     # 수익률 한번이라도 100% 미만인 경우 수익률 기준으로 매도 결정
-    if has_minus_exp and profit_rate > 100:
+    if has_minus_exp and profit_rate >= 100:
         pyupbit.sell_all()
         pyupbit.send_message(pyupbit.get_slack_channel(), f'[구사일생으로 팔았음.-{str(datetime.today())}]' + slack_message1)
         print('sell!!')
@@ -176,15 +174,14 @@ def working(market='', my_investment={}, prev_profit_rate=100, score=0, has_minu
         # pyupbit.send_message('#myinvestment', f'[Buying!!-{str(datetime.today())}]' + slack_message1)
         #    print('buy!!')
         # 매도 매수 시점 판단 빡침 스코어 기준으로 변경!
-        if score > 7:
+        if score > 5:
             pyupbit.sell_all()
             pyupbit.send_message(pyupbit.get_slack_channel(), f'[빡쳐서 팔았음!!-{str(datetime.today())}]' + slack_message1)
             print('sell!!')
         # 수익률이 너무 떨어질 것 같을때 매도
-        elif profit_rate < 98:
+        elif profit_rate < 99:
             pyupbit.sell_all()
-            pyupbit.send_message(pyupbit.get_slack_channel(),
-                                 f'[하락해서 팔았음... -{str(datetime.today())}]' + slack_message1)
+            pyupbit.send_message(pyupbit.get_slack_channel(), f'[하락해서 팔았음... -{str(datetime.today())}]' + slack_message1)
             print('sell...')
         # 그 외 상태일 경우
         else:
@@ -208,6 +205,7 @@ def get_rocketboosting_coins(candle_data, market_name):
     # 현재 코인 단가가 목표가 보다 높고 단가가 1원 이상인 코인만 필터
     if current_price >= target_price and pyupbit.get_today_opening_price(d) > 1:
         print(f'대상 : {coin_info}')
+        pyupbit.send_message(pyupbit.get_slack_channel(), coin_info)
         return {market: change_rate}
     else:
         #print(f'비대상 ::: {coin_info}')
@@ -234,7 +232,38 @@ def get_coin_info_with_candle(d, market_name):
     target_price = pyupbit.get_target_price_to_buy(market)
     # 코인 현재 단가
     current_price = pyupbit.get_current_coin_price(d)
-    coin_info = f"""목표가: {target_price} / 현재가: {str(current_price)} - {market} ({market_name}:{str(pyupbit.get_change_rate(d))}%) opening_p:{str(pyupbit.get_today_opening_price(d))} high_p(오늘[어제]):{str(pyupbit.get_today_high_price(d))}[{str(pyupbit.get_yesterday_high_price(d))}] low_p(오늘[어제]):{str(pyupbit.get_today_low_price(d))}[{str(pyupbit.get_yesterday_low_price(d))}] prev_p:{str(pyupbit.get_yesterday_close_price(d))} change_p:{str(pyupbit.get_change_price(d))}"""
+    # 오늘 시가
+    today_open_price = pyupbit.get_today_opening_price(d)
+    # 어제 고가
+    prev_high_price = pyupbit.get_yesterday_high_price(d)
+    # 어제 저가
+    prev_low_price = pyupbit.get_yesterday_low_price(d)
+    # 기준선
+    standard_price = pyupbit.calc_standard_line(prev_high_price, prev_low_price, today_open_price)
+    # 1차 지지선
+    first_low_price = pyupbit.first_lower_line(standard_price, prev_high_price)
+    # 2차 지지선
+    second_low_price = pyupbit.second_lower_line(standard_price, prev_high_price, prev_low_price)
+    # 1차 저항선
+    first_high_price = pyupbit.first_higher_line(standard_price, prev_low_price)
+    # 2차 저항선
+    second_high_price = pyupbit.second_higher_line(standard_price, prev_high_price, prev_low_price)
+    coin_info = f"""
+    현재시간 : {datetime.today()}
+    코인명: {market} ({market_name}:{str(pyupbit.get_change_rate(d))}%) 
+    opening_p:{str(pyupbit.get_today_opening_price(d))} 
+    high_p(오늘[어제]):{str(pyupbit.get_today_high_price(d))}[{str(pyupbit.get_yesterday_high_price(d))}] 
+    low_p(오늘[어제]):{str(pyupbit.get_today_low_price(d))}[{str(pyupbit.get_yesterday_low_price(d))}] 
+    prev_p:{str(pyupbit.get_yesterday_close_price(d))} 
+    change_p:{str(pyupbit.get_change_price(d))}
+    기준선 : {standard_price}
+    1차 지지선 : {first_low_price}
+    2차 지지선 : {second_low_price}
+    1차 저항선 : {first_high_price}
+    2차 저항선 : {second_high_price}
+    목표가 : {first_high_price}
+    현재가 : {current_price}
+    """
     return coin_info
 
 
@@ -244,13 +273,20 @@ def get_target_price_to_buy(market="KRW-BTC"):
     return d[0]['opening_price'] + (d[1]['high_price'] - d[1]['low_price']) * 0.5
 
 
-# 맵 객체 값으로 나쁜 코인 필터링(수익률 필터링)
+"""
+맵 객체 값으로 나쁜 코인 필터링(수익률 필터링)
+직전 수익률과 현재 수익률 기준으로
+투자 하지 말아야 할 코인들 필터링(직전 보다 현재 가격이 같거나 높은 코인들.. old_value <= new_value)
+"""
+
+
 def map_filtering(original_map, new_map):
     bad_arr = []
     for old_key, old_value in original_map.items():
         if old_key in new_map:
             new_value = new_map[old_key]
-            if old_value >= new_value:
+            # 요 부등호가 중요함!
+            if old_value <= new_value:
                 bad_arr.append(old_key)
     print(f'나쁜코인목록 ::: {bad_arr}')
     for old_key in bad_arr:

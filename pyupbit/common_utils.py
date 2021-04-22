@@ -43,6 +43,24 @@ def get_profit_rate(current_unit_price=0, buy_unit_price=0):
         return round((current_unit_price / buy_unit_price * 100), 2)
 
 
+def check_my_investment():
+    profit_rate = 0
+    myinfo_map = pyupbit.get_my_coin_info()
+
+    if myinfo_map is not None:
+        # 코인명
+        market = pyupbit.get_my_coin_name(myinfo_map)
+        # 내가 매수 한 코인 단가
+        buy_unit_price = pyupbit.get_my_coin_unit_price(myinfo_map)
+        # 분단위 캔들
+        coin_info = pyupbit.view_candle_min(market)
+        # 코인의 현재 단가(분단위 캔들로 조회)
+        current_my_coin_price = pyupbit.get_current_coin_price(coin_info)
+        # 현재 수익률
+        profit_rate = pyupbit.get_profit_rate(current_my_coin_price, buy_unit_price)
+    return profit_rate <= 100
+
+
 # 일 캔들에서 값 추출(코인 코드)
 def get_market(candle):
     return candle[0]['market']
@@ -112,3 +130,8 @@ def get_prev_dict(investable_map, all_market_codes, all_market_names):
         return investable_map
     else:
         return pyupbit.get_investable_coin_map(all_market_codes, all_market_names)
+
+
+# 내가 보유 한 코인의 가치 조회
+def get_my_value(unit_price, coin_quantity):
+    return float(unit_price) * float(coin_quantity)
