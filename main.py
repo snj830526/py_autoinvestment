@@ -36,7 +36,7 @@ def profit_check_and_order():
                 # 코인 찾아서 매수
                 pyupbit.init_prepairing(investable_coins_map, all_market_codes, all_market_names, order_money)
             else:
-                slack_message = '수익률이 100% 이하라서 매도 없이 초기화 시작함.'
+                slack_message = ':meow_party: 수익률이 100% 이하라서 매도 없이 초기화 시작함.'
                 print(slack_message)
                 pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
             # 스코어 초기화

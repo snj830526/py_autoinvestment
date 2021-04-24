@@ -87,7 +87,7 @@ def get_best_coin_name(investable_coins_map={}, prev_coins_map={}):
                 pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
                 return best_coin
         else:
-            slack_message = f'살만한 코인이 없습니다.. 1분 후 다시 초기화 작업 시작합니다..'
+            slack_message = f':meow_code: 살만한 코인이 없습니다.. 1분 후 다시 초기화 작업 시작합니다..'
             print(slack_message)
             time.sleep(60)
             pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
