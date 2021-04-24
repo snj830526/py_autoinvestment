@@ -1,3 +1,5 @@
+import time
+
 import jwt
 import uuid
 import hashlib
@@ -78,29 +80,35 @@ def order_10000(market_name="KRW-BTC", order_volume=0, order_type='bid'):
 
 # 내 계좌에 있는 코인 전부 매도(수익률에 따라 전량 매도 할지 결정하도록 변경)
 def sell_all():
-    myinfo_map = pyupbit.get_my_coin_info()
+    if pyupbit.get_auto_sell() == 'YES':
+        myinfo_map = pyupbit.get_my_coin_info()
 
-    if myinfo_map is not None:
-        # 코인명
-        market = pyupbit.get_my_coin_name(myinfo_map)
-        # 내가 구매 한 코인 수
-        my_coin_amount = pyupbit.get_my_coin_total_amount(myinfo_map)
-        # 분단위 캔들
-        coin_info = pyupbit.view_candle_min(market)
-        # 코인의 현재 단가(분단위 캔들로 조회)
-        current_my_coin_price = pyupbit.get_current_coin_price(coin_info)
+        if myinfo_map is not None:
+            # 코인명
+            market = pyupbit.get_my_coin_name(myinfo_map)
+            # 내가 구매 한 코인 수
+            my_coin_amount = pyupbit.get_my_coin_total_amount(myinfo_map)
+            # 분단위 캔들
+            coin_info = pyupbit.view_candle_min(market)
+            # 코인의 현재 단가(분단위 캔들로 조회)
+            current_my_coin_price = pyupbit.get_current_coin_price(coin_info)
 
-        order_price = current_my_coin_price
-        order_volume = my_coin_amount
-        order_type = 'ask'
+            order_price = current_my_coin_price
+            order_volume = my_coin_amount
+            order_type = 'ask'
 
-        # 전량 매도!
-        order_coin(
-            market_name=market,
-            order_money=order_price,
-            order_volume=order_volume,
-            type=order_type
-        )
+            # 전량 매도!
+            order_coin(
+                market_name=market,
+                order_money=order_price,
+                order_volume=order_volume,
+                type=order_type
+            )
+
+            # 전량 매도 시 10분간 휴식
+            time.sleep(600)
+    else:
+        pyupbit.send_message(pyupbit.get_slack_channel(), '자동 매도 기능을 허용하지 않았습니다. \ninvest_helper에게 요청 하세요.')
 
 
 # 가장 좋을 것 같은 코인 매수

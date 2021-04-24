@@ -2,10 +2,10 @@ import time
 import pyupbit
 
 
-# 가즈아!
+# 투자 메인 입니다.
 def profit_check_and_order():
     # 투자할 금액
-    order_money = 20_000
+    order_money = pyupbit.get_my_order_price()
     # 한시간마다 투자 재시작 시키기 위한 카운터
     counter = 0
     # 직전 수익률
@@ -26,15 +26,16 @@ def profit_check_and_order():
         if counter % 17280 == 0:
             keep_going = pyupbit.check_my_investment()
             print('Finding the best coin to invest...(It runs once in an hour.)')
+            # 수익률이 100% 이상이면 매도 하고 시작
             if not keep_going:
                 print('계좌에 보유한 코인이 없는 상태로 만들고 -> 매수 시작!')
                 # 전 시간에 투자 한 코인 전량 매도
                 if pyupbit.get_my_coin_info() is not None:
                     pyupbit.sell_all()
-                # 코인 20000원 어치 매수
+                # 코인 찾아서 매수
                 pyupbit.init_prepairing(investable_coins_map, all_market_codes, all_market_names, order_money)
             else:
-                slack_message = f"""매도 없이 초기화 시작함."""
+                slack_message = '매도 없이 초기화 시작함.'
                 print(slack_message)
                 pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
             # 스코어 초기화
@@ -49,15 +50,15 @@ def profit_check_and_order():
                 has_minus_exp = strategy_report_arr[2]
                 # 수익률이 애매할 때 슬랙으로 메시지 보내기
                 if prev_profit_rate > 95 and counter % 5 == 0:
-                    notice_message = f'코인 : {market}, 수익률 : {prev_profit_rate}%'
+                    notice_message = f'코인 : {market}, 수익률 : {prev_profit_rate}%, 마이너스 다녀온적? : {has_minus_exp}'
                     print(f'send message! / {notice_message} / {counter}')
                     pyupbit.send_message(pyupbit.get_slack_channel(), notice_message)
         else:
-            # 내 계좌에 코인이 없으면 다시 20000원 어치 매수
+            # 내 계좌에 코인이 없으면 다시 주문금액 만큼 매수
             pyupbit.init_prepairing(investable_coins_map, all_market_codes, all_market_names, order_money)
             # 스코어 초기화
             score = 0
-            # 재시작 카운터 초기화
+            # 재시작 카운터 초기화(매도 했으니 초기화)
             counter = 0
         counter = counter + 1
         # 위의 프로세스는 5초에 1회 동작

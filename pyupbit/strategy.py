@@ -8,9 +8,9 @@ def init_prepairing(investable_coins_map, all_market_codes, all_market_names, or
     prev_coins_map = pyupbit.get_prev_dict(investable_coins_map, all_market_codes, all_market_names)
     investable_coins_map = get_investable_coin_map(all_market_codes, all_market_names)
     slack_message = f"""
-                    현재코인수익률 ::: {investable_coins_map}
-                    직전코인수익률 ::: {prev_coins_map}
-                """
+    현재코인수익률 ::: {investable_coins_map}
+    직전코인수익률 ::: {prev_coins_map}
+    """
     pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
     best_coin = get_best_coin_name(investable_coins_map, prev_coins_map)
     init(best_coin, order_money)

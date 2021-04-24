@@ -74,7 +74,7 @@ def get_investable_coins(d, market_name):
     # 전날 대비 변동 률
     #change_rate = pyupbit.get_change_rate(d)
     # 1차 저항선과 현재 가격 차이
-    change_rate = round(first_low_price / current_price * 100, 2)
+    change_rate = round(first_high_price / current_price * 100, 2)
     # 코인 정보
     coin_info = pyupbit.get_coin_info_with_candle(d, market_name)
     # 1차 저항선을 넘은 코인을 대상으로 한다.
@@ -87,13 +87,13 @@ def get_investable_coins(d, market_name):
         return None
 
 
-# 빡침 스코어 기록기
+# 매도 시점 스코어 기록기
 def new_calc_profit_score(happy_score=0, prev_profit_rate=0, current_profit_rate=0):
     # 플러스 변동폭
     plus_change_rate = current_profit_rate - prev_profit_rate
-    # 마이너스 변동폭(마이너스 / 플러스 반대)
+    # 플러스 변동폭(마이너스 / 플러스 반대)
     minus_change_rate = prev_profit_rate - current_profit_rate
-    # 빡침 스코어 계산 하기!
+    # 스코어 계산 하기!
     # 수익률 100% 이상
     if current_profit_rate >= 100:
         # 상승중! (가즈아)
@@ -105,16 +105,16 @@ def new_calc_profit_score(happy_score=0, prev_profit_rate=0, current_profit_rate
     # 수익률 100% 미만
     else:
         happy_score = 0
-    slack_message = f'현재 점수는 ::: {round(happy_score, 2)} / 변동폭은 ::: {round(plus_change_rate, 2)}% / 직전 수익률은 ::: {prev_profit_rate}% / 현재 수익률은 ::: {current_profit_rate}%'
+    slack_message = f'현재 스코어는 ::: {round(happy_score, 2)} / 변동폭은 ::: {round(plus_change_rate, 2)}% / 직전 수익률은 ::: {prev_profit_rate}% / 현재 수익률은 ::: {current_profit_rate}%'
     print(slack_message)
-    if happy_score >= 0.5:
+    if happy_score > 0:
         pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
     elif happy_score < 0:
         happy_score = 0
     return happy_score
 
 
-# 새로운 메인 로직(테스트 중)
+# 새로운 투자 로직
 def new_working(market, my_investment={}, prev_profit_rate=100, score=0, has_minus_exp=False):
     # 일 캔들 조회
     d = pyupbit.get_candle_data(market)
@@ -142,7 +142,7 @@ def new_working(market, my_investment={}, prev_profit_rate=100, score=0, has_min
     first_high_price = pyupbit.first_higher_line(standard_price, prev_low_price)
     # 2차 저항선
     second_high_price = pyupbit.second_higher_line(standard_price, prev_high_price, prev_low_price)
-    slack_message1 = f"코인명 ::: {market}(현재행복점수 : {round(score, 2)}), 매수단가 ::: {buy_unit_price}, 현재단가 ::: {current_unit_price}, 수익률 ::: {str(profit_rate)}%"
+    slack_message1 = f"코인명 ::: {market}(현재 스코어 : {round(score, 2)}), 매수단가 ::: {buy_unit_price}, 현재단가 ::: {current_unit_price}, 수익률 ::: {str(profit_rate)}%"
     print(slack_message1)
     # 매도 시점 판단 로직
     """
@@ -160,20 +160,16 @@ def new_working(market, my_investment={}, prev_profit_rate=100, score=0, has_min
             pyupbit.sell_all()
             pyupbit.send_message(pyupbit.get_slack_channel(), f'[기분좋게 팔았음!!-{str(datetime.today())}]' + slack_message1)
             print('sell!!')
-    #elif standard_price >= current_price:
-        #pyupbit.send_message(pyupbit.get_slack_channel(), 'understanding my life...')
-    #    print('understanding my life...')
     else:
-        # 버티기 -> 손절 포인트 -7.1% (테스트) -> 손절 시 10분간 생각할 시간을 가지게 하고 다시 들어가기.
+        # 버티기 -> 손절 포인트 -7.1% (테스트) -> 손절 시 10분간 생각할 시간을 가지게 하고 다시 들어가기. -> 손절 기능 일단 제거.
         if profit_rate <= 92.9:
             pyupbit.sell_all()
             slack_message1 = f"""
             '[손절하였습니다...]'
             {slack_message1}
-            1시간 뒤 자동투자를 다시 시작 합니다.
+            10분 뒤 자동투자를 다시 시작 합니다.
             """
             pyupbit.send_message(pyupbit.get_slack_channel(), slack_message1)
-            time.sleep(3600)
         else:
             print('understanding my life...')
     return [profit_rate, score, has_minus_exp]
