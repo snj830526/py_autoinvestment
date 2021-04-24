@@ -24,7 +24,7 @@ def profit_check_and_order():
     while True:
         # 처음 시작 / 1일 동안 별 소득 없으면 투자 초기화 동작
         if counter % 17280 == 0:
-            keep_going = pyupbit.check_my_investment()
+            keep_going = float(pyupbit.check_my_investment())
             print('Finding the best coin to invest...(It runs once in an hour.)')
             # 수익률이 100% 이상이면 매도 하고 시작
             if not keep_going:
