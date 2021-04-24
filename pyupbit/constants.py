@@ -32,8 +32,3 @@ def get_slack_token():
 # main.py path
 def get_script_path():
     return config['main_script_path']
-
-
-# slack bot token(invest_helper)
-def get_slack_bot_token():
-    return config['slack_bot_token']
