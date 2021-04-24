@@ -5,7 +5,7 @@ from datetime import datetime
 
 # 초기화 준비
 def init_prepairing(investable_coins_map, all_market_codes, all_market_names, order_money):
-    # 이전 투자 시 코인 별 전날 대비 상승률 확인
+    # 이전 투자 시 코인 별 전날 대비 상승률
     prev_coins_map = pyupbit.get_prev_dict(investable_coins_map, all_market_codes, all_market_names)
     # 투자할 만한 코인 목록 가져오기
     investable_coins_map = get_investable_coin_map(all_market_codes, all_market_names)

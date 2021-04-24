@@ -27,7 +27,7 @@ def profit_check_and_order():
         if counter % 17280 == 0:
             # 수익률 먼저 체크(수익률이 100% 이하인지 확인)
             keep_going = pyupbit.check_my_investment()
-            print('Finding the best coin to invest...(It runs once in an hour.)')
+            print('Finding the best coin to invest...(It runs once in a day.)')
             # 수익률이 100% 초과면 매도 하고 시작
             if not keep_going:
                 if pyupbit.get_my_coin_info() is not None:

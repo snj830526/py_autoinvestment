@@ -124,7 +124,7 @@ def reverse_map(old_dict):
     return dict([(value, key) for key, value in old_dict.items()])
 
 
-# 지난시간에 투자할만한 맵 셋팅
+# 지난 번 투자할만한 코인 맵
 def get_prev_dict(investable_map, all_market_codes, all_market_names):
     if dict(investable_map):
         return investable_map

@@ -20,7 +20,7 @@ def get_my_account():
     return response.json()
 
 
-# 내가 가진 코인 요약 정보 조회
+# 내가 가진 코인 요약 정보 조회(코인 1개만 처리)
 def get_my_coin_info():
     account = get_my_account()
     if len(account) > 1:
