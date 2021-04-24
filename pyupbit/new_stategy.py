@@ -160,10 +160,20 @@ def new_working(market, my_investment={}, prev_profit_rate=100, score=0, has_min
             pyupbit.sell_all()
             pyupbit.send_message(pyupbit.get_slack_channel(), f'[기분좋게 팔았음!!-{str(datetime.today())}]' + slack_message1)
             print('sell!!')
-    elif standard_price >= current_price:
+    #elif standard_price >= current_price:
         #pyupbit.send_message(pyupbit.get_slack_channel(), 'understanding my life...')
-        print('understanding my life...')
+    #    print('understanding my life...')
     else:
-        # 버티기
-        print('understanding my life...')
+        # 버티기 -> 손절 포인트 -7.1% (테스트) -> 손절 시 10분간 생각할 시간을 가지게 하고 다시 들어가기.
+        if profit_rate <= 92.9:
+            pyupbit.sell_all()
+            slack_message1 = f"""
+            '[손절하였습니다...]'
+            {slack_message1}
+            1시간 뒤 자동투자를 다시 시작 합니다.
+            """
+            pyupbit.send_message(pyupbit.get_slack_channel(), slack_message1)
+            time.sleep(3600)
+        else:
+            print('understanding my life...')
     return [profit_rate, score, has_minus_exp]

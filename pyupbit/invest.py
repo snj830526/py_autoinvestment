@@ -103,7 +103,6 @@ def sell_all():
         )
 
 
-
 # 가장 좋을 것 같은 코인 매수
 def order_best_coin(best_coin='', order_amount=0):
     coin_info = pyupbit.view_candle_min(best_coin)

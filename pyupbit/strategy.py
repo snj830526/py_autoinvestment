@@ -65,7 +65,7 @@ def get_best_coin_name(investable_coins_map={}, prev_coins_map={}):
             print(f'original_map ::: {investable_coins_map}')
             if dict(prev_coins_map):
                 print(f'prev_coins_map ::: {prev_coins_map}')
-                # 코인 맵에서 이전 상승률 보다 상승률이 낮은 코인 제거(반대로 테스트)
+                # 코인 맵에서 이전 상승률 보다 상승률이 낮은 코인 제거(반대로 테스트 -> 다시 원복)
                 filtered_map = pyupbit.map_filtering(prev_coins_map, investable_coins_map)
                 print(f'original_map :: {investable_coins_map} / filtered_map :: {filtered_map}')
                 investable_coins_map = filtered_map
@@ -286,7 +286,7 @@ def map_filtering(original_map, new_map):
         if old_key in new_map:
             new_value = new_map[old_key]
             # 요 부등호가 중요함!
-            if old_value <= new_value:
+            if old_value >= new_value:
                 bad_arr.append(old_key)
     print(f'나쁜코인목록 ::: {bad_arr}')
     for old_key in bad_arr:
