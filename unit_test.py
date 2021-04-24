@@ -57,8 +57,8 @@ def test_profit_rate():
     current_coin = pyupbit.view_candle_min(list(my_investment.keys())[0])
     current_coin_price = pyupbit.get_current_coin_price(current_coin)
     print(f'my_investment ::: {my_investment} / current_coin_info ::: {current_coin_price}')
-    day_candle = pyupbit.view_candle_day('KRW-IQ', 'test')
-    print(f'day ::: {day_candle}')
+    #day_candle = pyupbit.view_candle_day('KRW-IQ', 'test')
+    #print(f'day ::: {day_candle}')
 
 
 def test_best_coin():
@@ -67,12 +67,12 @@ def test_best_coin():
     market_names = pyupbit.all_market_names.view_market_names()
     i = 0
     for code in market_codes:
-        coin = pyupbit.view_candle_day(code, market_names[i])
-        if coin is not None:
-            print(f'all coins ::: {coin}')
-            investable_coins_map.update(coin)
+        #coin = pyupbit.view_candle_day(code, market_names[i])
+        #if coin is not None:
+            #print(f'all coins ::: {coin}')
+            #investable_coins_map.update(coin)
         time.sleep(0.5)
-        i = i + 1
+        #i = i + 1
     investable_coins_map = sorted(investable_coins_map.items(), reverse=True)
     print(f'coins ::: {investable_coins_map}')
     best_coin = list(investable_coins_map[0])[1]

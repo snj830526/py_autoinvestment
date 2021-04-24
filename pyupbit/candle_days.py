@@ -8,10 +8,3 @@ def get_candle_data(market=""):
     querystring = {"market": market, "count": "2"}
     response = requests.request("GET", url, params=querystring)
     return response.json()
-
-
-# 잘 될 것 같은 코인 목록 조회
-def view_candle_day(market="KRW-BTC", market_name=""):
-    d = get_candle_data(market)
-    return pyupbit.get_investable_coins(d, market_name)
-

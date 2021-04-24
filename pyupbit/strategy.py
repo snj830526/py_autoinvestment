@@ -5,14 +5,19 @@ from datetime import datetime
 
 # 초기화 준비
 def init_prepairing(investable_coins_map, all_market_codes, all_market_names, order_money):
+    # 이전 투자 시 코인 별 전날 대비 상승률 확인
     prev_coins_map = pyupbit.get_prev_dict(investable_coins_map, all_market_codes, all_market_names)
+    # 투자할 만한 코인 목록 가져오기
     investable_coins_map = get_investable_coin_map(all_market_codes, all_market_names)
+
     slack_message = f"""
-    현재코인수익률 ::: {investable_coins_map}
-    직전코인수익률 ::: {prev_coins_map}
+    현재코인들 수익률 ::: {investable_coins_map}
+    이전코인들 수익률 ::: {prev_coins_map}
     """
     pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
+    # 투자 할 코인 1개 가져오기
     best_coin = get_best_coin_name(investable_coins_map, prev_coins_map)
+    # 매수
     init(best_coin, order_money)
 
 
@@ -20,19 +25,20 @@ def init_prepairing(investable_coins_map, all_market_codes, all_market_names, or
 def init(best_coin='', order_money=0):
     init_counter = 0
     print(f"이번시간에 투자할 코인은? {best_coin}")
-    # 가장 살만할 것 같은 코인 50,000원 어치 매수
+    # 가장 살만할 것 같은 코인 매수
     response = pyupbit.order_best_coin(best_coin, order_money)
     print(f'주문 결과 ::: {response} / uuid ::: {pyupbit.get_order_bid_uuid(response.json())}')
     # 주문 성공 시 매수 완료 될 때 까지 대기
     if 200 <= response.status_code <= 299:
         # 매수 신청 후 매수 될 때까지 대기
         while pyupbit.get_my_coin_info() is None:
+            # 1초에 한번 매수 되었는지 확인
             time.sleep(1)
             init_counter = init_counter + 1
             print('매수 체결 대기 중...')
             if init_counter >= 30:
                 print(f'아직 사지지 않았습니다. 30초 후 다시 초기화 작업 시작합니다..')
-                # 너무 오래 걸리면 주문 취소 후 다시 시도(주문 취소 동작 하지 않음)
+                # 너무 오래 걸리면 주문 취소, 30초 후 다시 매수 시도
                 pyupbit.cancel_order(pyupbit.get_order_bid_uuid(response.json()))
                 time.sleep(30)
                 init(best_coin, order_money)
@@ -43,13 +49,13 @@ def init(best_coin='', order_money=0):
         init(best_coin, order_money)
 
 
-# 투자해도 될 것 같은 코인 조회
+# 투자해도 될 것 같은 코인 목록 조회
 def get_investable_coin_map(market_codes=[], market_names=[]):
     investable_coins_map = {}
     i = 0
     for code in market_codes:
-        # coin = { 전날 대비 변동률 : 코인 코드 }
-        coin = pyupbit.view_candle_day(code, market_names[i])
+        # coin = { 코인 코드 : 현재가와 1차 저항선 간 차이% }
+        coin = pyupbit.get_investable_coins(code, market_names[i])
         if coin is not None:
             investable_coins_map.update(coin)
         time.sleep(0.3)
@@ -57,23 +63,26 @@ def get_investable_coin_map(market_codes=[], market_names=[]):
     return investable_coins_map
 
 
-# 거래 가능한 코인 중 가장 좋을 것 같은 코인 조회
+# 투자해도 될 것 같은 코인 중 가장 좋을 것 같은 코인 조회
 def get_best_coin_name(investable_coins_map={}, prev_coins_map={}):
-    print('오늘 날짜는? ' + str(datetime.today()))
     while True:
         if dict(investable_coins_map):
             print(f'original_map ::: {investable_coins_map}')
             if dict(prev_coins_map):
                 print(f'prev_coins_map ::: {prev_coins_map}')
-                # 코인 맵에서 이전 상승률 보다 상승률이 낮은 코인 제거(반대로 테스트 -> 다시 원복)
+                # 코인 맵에서 이전 상승률 보다 현재 상승률이 낮은 코인 제거
                 filtered_map = pyupbit.map_filtering(prev_coins_map, investable_coins_map)
                 print(f'original_map :: {investable_coins_map} / filtered_map :: {filtered_map}')
                 investable_coins_map = filtered_map
             if dict(investable_coins_map):
+                # investable_coins_map = { 코인 코드 : 현재가와 1차 저항선 간 차이% }
+                # 투자 대상 코인을 현재가와 1차 저항선 간 차이 기준으로 정렬(asc)
                 coins_map = sorted(investable_coins_map.items(), reverse=False, key=lambda item: item[1])
+                # 현재가와 1차 저항선 간 차이가 가장 작은 코인
                 best_coin = list(coins_map[0])[0]
+                # 현재가와 1차 저항선 간 차이
                 coin_dynamic_rate = list(coins_map[0])[1]
-                slack_message = f"best_coin ::: {best_coin} / change_rate ::: {coin_dynamic_rate}%"
+                slack_message = f"best_coin ::: {best_coin} / change_rate(현재가 - 1차 저항선) ::: {coin_dynamic_rate}%"
                 print(slack_message)
                 pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
                 return best_coin
@@ -95,7 +104,7 @@ def recursive_get_investable_coin_map(prev_coins_map={}):
     return get_best_coin_name(investable_coins_map, prev_coins_map)
 
 
-# 빡침 스코어 기록기
+# 빡침 스코어 기록기(안씀)
 def calc_profit_score(rage_score=0, prev_profit_rate=0, current_profit_rate=0):
     """
     매도 할 타이밍은 스코어가 5점 이상인 경우로 한다.
@@ -139,7 +148,7 @@ def calc_profit_score(rage_score=0, prev_profit_rate=0, current_profit_rate=0):
     return rage_score
 
 
-# 매도 / 매수 메인 로직
+# 매도 / 매수 메인 로직(안씀)
 def working(market='', my_investment={}, prev_profit_rate=100, score=0, has_minus_exp=False):
     # 해당 코인의 현재 상태(분 캔들) 조회
     coin_candle = pyupbit.view_candle_min(market)
@@ -190,7 +199,7 @@ def working(market='', my_investment={}, prev_profit_rate=100, score=0, has_minu
     return [profit_rate, score, has_minus_exp]
 
 
-# 잘 될 것 같은 코인 계산
+# 잘 될 것 같은 코인 계산(안씀)
 def get_rocketboosting_coins(candle_data, market_name):
     d = candle_data
     # 코인 코드
@@ -212,7 +221,7 @@ def get_rocketboosting_coins(candle_data, market_name):
         return None
 
 
-# 코인 변동률 맵 조회(전체)
+# 코인 변동률 맵 조회(전체)(안씀)
 def get_coin_rate_map(market_codes=[]):
     result_map = {}
     for market in market_codes:
@@ -224,7 +233,7 @@ def get_coin_rate_map(market_codes=[]):
     return result_map
 
 
-# 캔들 데이터로 코인 정보 조회
+# 일 캔들 데이터로 코인 정보 조회
 def get_coin_info_with_candle(d, market_name):
     # 코인 코드
     market = pyupbit.get_market(d)
@@ -267,7 +276,7 @@ def get_coin_info_with_candle(d, market_name):
     return coin_info
 
 
-# 목표 코인 단가 계산
+# 목표 코인 단가 계산(안씀)
 def get_target_price_to_buy(market="KRW-BTC"):
     d = pyupbit.get_candle_data(market)
     return d[0]['opening_price'] + (d[1]['high_price'] - d[1]['low_price']) * 0.5
@@ -280,6 +289,7 @@ def get_target_price_to_buy(market="KRW-BTC"):
 """
 
 
+# 나쁜 코인 필터링
 def map_filtering(original_map, new_map):
     bad_arr = []
     for old_key, old_value in original_map.items():

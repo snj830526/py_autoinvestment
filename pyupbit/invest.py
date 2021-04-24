@@ -80,6 +80,7 @@ def order_10000(market_name="KRW-BTC", order_volume=0, order_type='bid'):
 
 # 내 계좌에 있는 코인 전부 매도(수익률에 따라 전량 매도 할지 결정하도록 변경)
 def sell_all():
+    # config.json 자동 매도 기능 허용 여부 확인
     if pyupbit.get_auto_sell() == 'YES':
         myinfo_map = pyupbit.get_my_coin_info()
 
@@ -104,9 +105,6 @@ def sell_all():
                 order_volume=order_volume,
                 type=order_type
             )
-
-            # 전량 매도 시 10분간 휴식
-            time.sleep(600)
     else:
         pyupbit.send_message(pyupbit.get_slack_channel(), '자동 매도 기능을 허용하지 않았습니다. \ninvest_helper에게 요청 하세요.')
 

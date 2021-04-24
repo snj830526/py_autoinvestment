@@ -50,9 +50,9 @@ target_price = d[0]['opening_price'] + (d[1]['high_price'] - d[1]['low_price']) 
 """
 
 
-def get_investable_coins(d, market_name):
-    # 코인 코드
-    market = pyupbit.get_market(d)
+# 투자할 만한 코인인지 검증(현재 가격이 1차 지지선 ~ 2차 지지선 사이에 있는 코인)
+def get_investable_coins(market, market_name):
+    d = pyupbit.get_candle_data(market)
     # 코인 현재 단가
     current_price = pyupbit.get_current_coin_price(d)
     # 오늘 시가
@@ -71,8 +71,6 @@ def get_investable_coins(d, market_name):
     first_high_price = pyupbit.first_higher_line(standard_price, prev_low_price)
     # 2차 저항선
     second_high_price = pyupbit.second_higher_line(standard_price, prev_high_price, prev_low_price)
-    # 전날 대비 변동 률
-    #change_rate = pyupbit.get_change_rate(d)
     # 1차 저항선과 현재 가격 차이
     change_rate = round(first_high_price / current_price * 100, 2)
     # 코인 정보
@@ -91,8 +89,6 @@ def get_investable_coins(d, market_name):
 def new_calc_profit_score(happy_score=0, prev_profit_rate=0, current_profit_rate=0):
     # 플러스 변동폭
     plus_change_rate = current_profit_rate - prev_profit_rate
-    # 플러스 변동폭(마이너스 / 플러스 반대)
-    minus_change_rate = prev_profit_rate - current_profit_rate
     # 스코어 계산 하기!
     # 수익률 100% 이상
     if current_profit_rate >= 100:
@@ -161,8 +157,8 @@ def new_working(market, my_investment={}, prev_profit_rate=100, score=0, has_min
             pyupbit.send_message(pyupbit.get_slack_channel(), f'[기분좋게 팔았음!!-{str(datetime.today())}]' + slack_message1)
             print('sell!!')
     else:
-        # 버티기 -> 손절 포인트 -7.1% (테스트) -> 손절 시 10분간 생각할 시간을 가지게 하고 다시 들어가기. -> 손절 기능 일단 제거.
-        if profit_rate <= 92.9:
+        # 버티기 -> 손절 포인트 -10% (테스트) -> 손절 시 10분간 생각할 시간을 가지게 하고 다시 들어가기. -> 손절 기능 일단 제거.
+        if profit_rate <= 90:
             pyupbit.sell_all()
             slack_message1 = f"""
             '[손절하였습니다...]'
@@ -170,6 +166,8 @@ def new_working(market, my_investment={}, prev_profit_rate=100, score=0, has_min
             10분 뒤 자동투자를 다시 시작 합니다.
             """
             pyupbit.send_message(pyupbit.get_slack_channel(), slack_message1)
+            # 손절 매도 시 10분간 휴식
+            time.sleep(600)
         else:
-            print('understanding my life...')
+            print('thinking...')
     return [profit_rate, score, has_minus_exp]
