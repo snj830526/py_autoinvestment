@@ -47,6 +47,11 @@ def profit_check_and_order():
                 prev_profit_rate = strategy_report_arr[0]
                 score = strategy_report_arr[1]
                 has_minus_exp = strategy_report_arr[2]
+                # 수익률이 애매할 때 슬랙으로 메시지 보내기
+                if prev_profit_rate > 95 and counter % 5 == 0:
+                    notice_message = f'코인 : {market}, 수익률 : {prev_profit_rate}%'
+                    print(f'send message! / {notice_message} / {counter}')
+                    pyupbit.send_message(pyupbit.get_slack_channel(), notice_message)
         else:
             # 내 계좌에 코인이 없으면 다시 20000원 어치 매수
             pyupbit.init_prepairing(investable_coins_map, all_market_codes, all_market_names, order_money)
