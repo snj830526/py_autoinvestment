@@ -42,3 +42,8 @@ def get_my_order_price():
 # 자동 매각 기능 허용
 def get_auto_sell():
     return config['auto_sell']
+
+
+# 손절 퍼센트값
+def get_force_cell_percecnt():
+    return config['force_sell_percent']

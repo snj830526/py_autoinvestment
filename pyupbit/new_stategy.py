@@ -93,7 +93,7 @@ def new_calc_profit_score(happy_score=0, prev_profit_rate=0, current_profit_rate
     # 스코어 계산 하기!
     # 수익률 100% 이상
     if current_profit_rate >= 100:
-        # 상승중! (가즈아)
+        # 상승중!
         if plus_change_rate >= 0:
             happy_score = happy_score + plus_change_rate / 2
         # 하락중! (안돼!!)
@@ -102,7 +102,7 @@ def new_calc_profit_score(happy_score=0, prev_profit_rate=0, current_profit_rate
     # 수익률 100% 미만
     else:
         happy_score = 0
-    slack_message = f'현재 스코어는 ::: {round(happy_score, 2)} / 변동폭은 ::: {round(plus_change_rate, 2)}% / 직전 수익률은 ::: {prev_profit_rate}% / 현재 수익률은 ::: {current_profit_rate}%'
+    slack_message = f':meow_code: 현재 스코어는 ::: {round(happy_score, 2)} / 변동폭은 ::: {round(plus_change_rate, 2)}% / 직전 수익률은 ::: {prev_profit_rate}% / 현재 수익률은 ::: {current_profit_rate}%'
     print(slack_message)
     if happy_score > 0:
         pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
@@ -158,11 +158,12 @@ def new_working(market, my_investment={}, prev_profit_rate=100, score=0, has_min
         # 스코어 기준 계산 하기(상승시에만 계산하니까 1로 변경)
         if score >= 1:
             pyupbit.sell_all()
-            pyupbit.send_message(pyupbit.get_slack_channel(), f':aaw_yeah: [벌었음!!-{str(datetime.today())}]' + slack_message1)
+            pyupbit.send_message(pyupbit.get_slack_channel(), f':aaw_yeah: [벌었음!!-1분 뒤 다시 투자 시작 합니다.]' + slack_message1)
             print('sell!!')
+            time.sleep(60)
     else:
         # 버티기 -> 손절 포인트 -10% (테스트) -> 손절 시 10분간 생각할 시간을 가지게 하고 다시 들어가기. -> 손절 기능 일단 제거.
-        if profit_rate <= 90:
+        if profit_rate <= pyupbit.get_force_cell_percecnt():
             pyupbit.sell_all()
             slack_message1 = f"""
             ':ahhhhhhhhh: [손절하였습니다...]'

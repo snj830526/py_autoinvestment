@@ -10,6 +10,8 @@ def profit_check_and_order():
     counter = 0
     # 직전 수익률
     prev_profit_rate = 100
+    # 비교용 수익률
+    recoding_profit_rate = 100
     # 수익률스코어
     score = 0
     # 마이너스 체험 여부
@@ -51,11 +53,12 @@ def profit_check_and_order():
                 prev_profit_rate = strategy_report_arr[0]
                 score = strategy_report_arr[1]
                 has_minus_exp = strategy_report_arr[2]
-                # 수익률이 애매할 때 슬랙으로 메시지 보내기(5초에 1회)
-                if prev_profit_rate > 99 and counter % 5 == 0:
-                    notice_message = f'코인 : {market}, 수익률 : {prev_profit_rate}%, 마이너스 다녀온적? : {has_minus_exp}'
+                # 수익률이 애매할 때 슬랙으로 메시지 보내기(10초에 1회)
+                if prev_profit_rate > 95 and counter % 10 == 0:
+                    notice_message = f':quad_parrot: 코인 : {market}, \n수익률 : {prev_profit_rate}%, \n수익률 변동폭 : {round(prev_profit_rate - recoding_profit_rate, 2)}%, \n마이너스 다녀온적? : {has_minus_exp}'
                     print(f'send message! / {notice_message} / {counter}')
                     pyupbit.send_message(pyupbit.get_slack_channel(), notice_message)
+                    recoding_profit_rate = prev_profit_rate
         else:
             # 내 계좌에 코인이 없으면 다시 주문금액 만큼 매수
             pyupbit.init_prepairing(investable_coins_map, all_market_codes, all_market_names, order_money)
