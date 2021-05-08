@@ -77,7 +77,7 @@ def get_best_coin_name(investable_coins_map={}, prev_coins_map={}):
             if dict(investable_coins_map):
                 # investable_coins_map = { 코인 코드 : 현재가와 1차 저항선 간 차이% }
                 # 투자 대상 코인을 현재가와 1차 저항선 간 차이 기준으로 정렬(asc)
-                coins_map = sorted(investable_coins_map.items(), reverse=False, key=lambda item: item[1])
+                coins_map = sorted(investable_coins_map.items(), reverse=True, key=lambda item: item[1])
                 # 현재가와 1차 저항선 간 차이가 가장 작은 코인
                 best_coin = list(coins_map[0])[0]
                 # 현재가와 1차 저항선 간 차이
@@ -87,9 +87,9 @@ def get_best_coin_name(investable_coins_map={}, prev_coins_map={}):
                 pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
                 return best_coin
         else:
-            slack_message = f':meow_code: 살만한 코인이 없습니다.. 1분 후 다시 초기화 작업 시작합니다..'
+            slack_message = f':meow_code: 살만한 코인이 없습니다.. 10분 후 다시 초기화 작업 시작합니다..'
             print(slack_message)
-            time.sleep(60)
+            time.sleep(600)
             pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
             return recursive_get_investable_coin_map(prev_coins_map)
 

@@ -35,8 +35,9 @@ def profit_check_and_order():
                 if pyupbit.get_my_coin_info() is not None:
                     # 전 시간에 투자 한 코인 전량 매도
                     pyupbit.sell_all()
-                # 코인 찾아서 매수
-                pyupbit.init_prepairing(investable_coins_map, all_market_codes, all_market_names, order_money)
+                if pyupbit.get_my_coin_info() is None:
+                    # 코인 찾아서 매수
+                    pyupbit.init_prepairing(investable_coins_map, all_market_codes, all_market_names, order_money)
             else:
                 slack_message = ':meow_party: 수익률이 100% 이하라서 매도 없이 초기화 시작함.'
                 print(slack_message)
@@ -53,8 +54,8 @@ def profit_check_and_order():
                 prev_profit_rate = strategy_report_arr[0]
                 score = strategy_report_arr[1]
                 has_minus_exp = strategy_report_arr[2]
-                # 수익률이 애매할 때 슬랙으로 메시지 보내기(10초에 1회)
-                if prev_profit_rate > 95 and counter % 10 == 0:
+                # 수익률이 애매할 때 슬랙으로 메시지 보내기(30초에 1회)
+                if prev_profit_rate > 100 and counter % 30 == 0:
                     notice_message = f':quad_parrot: 코인 : {market}, \n수익률 : {prev_profit_rate}%, \n수익률 변동폭 : {round(prev_profit_rate - recoding_profit_rate, 2)}%, \n마이너스 다녀온적? : {has_minus_exp}'
                     print(f'send message! / {notice_message} / {counter}')
                     pyupbit.send_message(pyupbit.get_slack_channel(), notice_message)

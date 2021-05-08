@@ -28,5 +28,5 @@
   "main_script_path": "main.py 가 설치 된 전체 경로"<br>
   "my_order_price": "자동투자에 쓸 투자금(고정값 - 10000원 부터 하세요)",<br>
   "auto_sell": "YES/NO",<br>
-  "force_sell_percent": 95 무조건 손절 할 수익률 값 입니다.
+  "force_sell_percent": 95 무조건 손절 할 수익률 값 입니다.<br>
 }
