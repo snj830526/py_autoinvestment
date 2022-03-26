@@ -1,7 +1,7 @@
 import json
 
-file = open('config.json')
-config = json.load(file)
+with open('config.json') as file:
+    config = json.load(file)
 
 
 # 슬랙 채널명
@@ -47,3 +47,7 @@ def get_auto_sell():
 # 손절 퍼센트값
 def get_force_cell_percecnt():
     return config['force_sell_percent']
+
+
+class StaticProperties:
+    STANDARD_PROFIT_RATE = 100

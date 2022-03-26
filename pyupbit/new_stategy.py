@@ -72,7 +72,10 @@ def get_investable_coins(market, market_name):
     # 2차 저항선
     second_high_price = pyupbit.second_higher_line(standard_price, prev_high_price, prev_low_price)
     # 1차 저항선과 현재 가격 차이
-    change_rate = round(current_price / first_high_price * 100, 2)
+    if first_high_price > 0:
+        change_rate = round(current_price / first_high_price * 100, 2)
+    else:
+        change_rate = 0
     # 코인 정보
     coin_info = pyupbit.get_coin_info_with_candle(d, market_name)
     # 1차 저항선을 넘은 코인을 대상으로 한다.

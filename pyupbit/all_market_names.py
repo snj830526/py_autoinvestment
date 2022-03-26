@@ -11,14 +11,17 @@ def view_market_codes():
     return arr
 
 
-# 원화로 거래 가능한 코인명 전체 조회
-def view_market_names():
+def get_all_markets():
     data = get_market_data()
-    arr = []
+    code_arr = []
+    name_arr = []
+
     for d in data:
         if 'USDT' not in d['market'] and 'BTC' not in d['market']:
-            arr.append(d['korean_name'])
-    return arr
+            code_arr.append(d['market'])
+            name_arr.append(d['korean_name'])
+
+    return code_arr, name_arr
 
 
 # 공통 부분 묶음

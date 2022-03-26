@@ -9,7 +9,6 @@ def test1():
 
 def util_test():
     print('teststart')
-    print(pyupbit.view_market_names())
 
 
 def test_candle_min_loop():
@@ -63,15 +62,15 @@ def test_profit_rate():
 
 def test_best_coin():
     investable_coins_map = {}
-    market_codes = pyupbit.all_market_names.view_market_codes()
-    market_names = pyupbit.all_market_names.view_market_names()
+    # market_codes = pyupbit.all_market_names.view_market_codes()
+    # market_names = pyupbit.all_market_names.view_market_names()
     i = 0
-    for code in market_codes:
+    # for code in market_codes:
         #coin = pyupbit.view_candle_day(code, market_names[i])
         #if coin is not None:
             #print(f'all coins ::: {coin}')
             #investable_coins_map.update(coin)
-        time.sleep(0.5)
+        # time.sleep(0.5)
         #i = i + 1
     investable_coins_map = sorted(investable_coins_map.items(), reverse=True)
     print(f'coins ::: {investable_coins_map}')

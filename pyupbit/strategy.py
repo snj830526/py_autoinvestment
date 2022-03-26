@@ -96,10 +96,9 @@ def get_best_coin_name(investable_coins_map={}, prev_coins_map={}):
 
 # 살만한 코인이 없는 경우 코인 목록 재 조회
 def recursive_get_investable_coin_map(prev_coins_map={}):
-    # 전체 코인 코드
-    all_market_codes = pyupbit.all_market_names.view_market_codes()
-    # 전체 코인 이름
-    all_market_names = pyupbit.all_market_names.view_market_names()
+    # 전체 코인 코드, 이름 조회
+    all_market_codes, all_market_names = pyupbit.get_all_markets()
+
     investable_coins_map = get_investable_coin_map(all_market_codes, all_market_names)
     return get_best_coin_name(investable_coins_map, prev_coins_map)
 

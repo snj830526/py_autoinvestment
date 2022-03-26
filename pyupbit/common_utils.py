@@ -57,7 +57,8 @@ def check_my_investment():
         # 코인의 현재 단가(분단위 캔들로 조회)
         current_my_coin_price = pyupbit.get_current_coin_price(coin_info)
         # 현재 수익률
-        profit_rate = pyupbit.get_profit_rate(current_my_coin_price, buy_unit_price)
+        profit_rate = pyupbit.get_profit_rate(current_my_coin_price, int(buy_unit_price))
+
     return profit_rate <= 100
 
 
