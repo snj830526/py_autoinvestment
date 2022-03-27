@@ -17,9 +17,11 @@ def get_all_markets():
     name_arr = []
 
     for d in data:
-        if 'USDT' not in d['market'] and 'BTC' not in d['market']:
+        if 'USDT' not in d['market'] and 'BTC' not in d['market'] and 'KRW-NU' != d['market']:
             code_arr.append(d['market'])
             name_arr.append(d['korean_name'])
+
+    print(f'market info list :: {code_arr} / {name_arr}')
 
     return code_arr, name_arr
 

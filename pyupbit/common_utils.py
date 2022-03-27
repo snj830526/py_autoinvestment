@@ -59,6 +59,11 @@ def check_my_investment():
         # 현재 수익률
         profit_rate = pyupbit.get_profit_rate(current_my_coin_price, int(buy_unit_price))
 
+    return profit_rate <= 100.1
+
+
+# 수익률 적자여부체크
+def check_profit_rate_in_red(profit_rate):
     return profit_rate <= 100
 
 
@@ -87,6 +92,16 @@ def get_today_high_price(candle):
     return candle[0]['high_price']
 
 
+# 일 캔들에서 값 추출(어제 거래량)
+def get_today_trade_volume(candle):
+    return candle[0]['candle_acc_trade_volume']
+
+
+# 일 캔들에서 값 추출(어제 거래 금액)
+def get_today_trade_amount(candle):
+    return candle[0]['candle_acc_trade_price']
+
+
 # 일 캔들에서 값 추출(오늘 고가)
 def get_yesterday_high_price(candle):
     return candle[1]['high_price']
@@ -95,6 +110,16 @@ def get_yesterday_high_price(candle):
 # 일 캔들에서 값 추출(오늘 저가)
 def get_today_low_price(candle):
     return candle[0]['low_price']
+
+
+# 일 캔들에서 값 추출(어제 거래량)
+def get_yesterday_trade_volume(candle):
+    return candle[1]['candle_acc_trade_volume']
+
+
+# 일 캔들에서 값 추출(어제 거래 금액)
+def get_yesterday_trade_amount(candle):
+    return candle[1]['candle_acc_trade_price']
 
 
 # 일 캔들에서 값 추출(어제 저가)
@@ -131,6 +156,11 @@ def get_prev_dict(investable_map, all_market_codes, all_market_names):
         return investable_map
     else:
         return pyupbit.get_investable_coin_map(all_market_codes, all_market_names)
+
+
+# 캔들 상태 조회
+def is_plus_candle(prev_price, current_price):
+    return True if prev_price < current_price else False
 
 
 # 내가 보유 한 코인의 가치 조회

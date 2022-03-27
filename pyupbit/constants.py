@@ -45,7 +45,7 @@ def get_auto_sell():
 
 
 # 손절 퍼센트값
-def get_force_cell_percecnt():
+def get_force_sell_percent():
     return config['force_sell_percent']
 
 
