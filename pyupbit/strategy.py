@@ -1,12 +1,66 @@
+from slack import WebClient
+
 import pyupbit
 import time
 from datetime import datetime
 
 
+def _get_purchase_bot():
+    bot_token = pyupbit.get_slack_bot_token()
+    return WebClient(bot_token)
+
+
+def wait_for_purchase(best_coin, order_money):
+    purchase_slack_bot = _get_purchase_bot()
+    slack_channel = pyupbit.get_slack_channel_id()
+    print(f'test :: {slack_channel}')
+
+    while True:
+        if not purchase_slack_bot:
+            purchase_slack_bot = _get_purchase_bot()
+
+        response = purchase_slack_bot.conversations_history(channel=slack_channel)
+        get_message = response['messages'][0]['text']
+        print(f"""마지막 메시지 ::: {get_message}""")
+        from pyupbit import InvestmentService
+
+        if get_message in pyupbit.get_purchase_keywords():
+            init_counter = 0
+            response = pyupbit.order_best_coin(best_coin, order_money)
+            print(f'주문 결과 ::: {response} / uuid ::: {pyupbit.get_order_bid_uuid(response.json())}')
+
+            # 주문 성공 시 매수 완료 될 때 까지 대기
+            if 200 <= response.status_code <= 299:
+                # 매수 신청 후 매수 될 때까지 대기
+                while pyupbit.get_my_coin_info() is None:
+                    # 1초에 한번 매수 되었는지 확인
+                    time.sleep(1)
+                    init_counter = init_counter + 1
+                    print('매수 체결 대기 중...')
+                    if init_counter >= 30:
+                        print(f'아직 사지지 않았습니다. 30초 후 다시 초기화 작업 시작합니다..')
+                        # 너무 오래 걸리면 주문 취소, 30초 후 다시 매수 시도
+                        pyupbit.cancel_order(pyupbit.get_order_bid_uuid(response.json()))
+                        time.sleep(30)
+                purchase_slack_bot.chat_meMessage(channel=slack_channel, text=f":tada:")
+                break
+        elif get_message == '0':
+            InvestmentService().initalize_investment()
+            break
+        else:
+            # 코인의 시세 조회
+            coin_info = pyupbit.view_candle_min(best_coin)
+            purchase_slack_bot.chat_meMessage(
+                channel=slack_channel,
+                text=f":meow_party: $ 구매 하고 싶으면 '2'을 입력 해라용. \n"
+                     f"다시 조회하고 싶으면 '0'!!\n"
+                     f"coin_info :: {coin_info[0]['market']} / {coin_info[0]['trade_price']}"
+            )
+            time.sleep(3)
+
+
 # 초기화 준비
 def init_prepairing(investable_coins_map, all_market_codes, all_market_names, order_money):
-    # 이전 투자 시 코인 별 전날 대비 상승률
-    #prev_coins_map = pyupbit.get_prev_dict(investable_coins_map, all_market_codes, all_market_names)
     prev_coins_map = {}
     # 투자할 만한 코인 목록 가져오기
     investable_coins_map = get_investable_coin_map(all_market_codes, all_market_names)
@@ -18,8 +72,10 @@ def init_prepairing(investable_coins_map, all_market_codes, all_market_names, or
     pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
     # 투자 할 코인 1개 가져오기
     best_coin = get_best_coin_name(investable_coins_map, prev_coins_map)
+    # TODO 수동 구매 기능 추가
+    wait_for_purchase(best_coin, order_money)
     # 매수
-    init(best_coin, order_money)
+    # init(best_coin, order_money)
 
 
 # 계좌에 보유한 코인이 없는 상태로 만들고 -> 매수 시작!
@@ -29,6 +85,7 @@ def init(best_coin='', order_money=0):
     # 가장 살만할 것 같은 코인 매수
     response = pyupbit.order_best_coin(best_coin, order_money)
     print(f'주문 결과 ::: {response} / uuid ::: {pyupbit.get_order_bid_uuid(response.json())}')
+    from pyupbit import InvestmentService
     # 주문 성공 시 매수 완료 될 때 까지 대기
     if 200 <= response.status_code <= 299:
         # 매수 신청 후 매수 될 때까지 대기
@@ -39,15 +96,16 @@ def init(best_coin='', order_money=0):
             print('매수 체결 대기 중...')
             if init_counter >= 30:
                 print(f'아직 사지지 않았습니다. 30초 후 다시 초기화 작업 시작합니다..')
-                # 너무 오래 걸리면 주문 취소, 30초 후 다시 매수 시도
+                # 너무 오래 걸리면 주문 취소, 10초 후 다시 매수 시도
                 pyupbit.cancel_order(pyupbit.get_order_bid_uuid(response.json()))
                 time.sleep(30)
-                recursive_get_investable_coin_map()
+
+                return InvestmentService().initalize_investment()
     # 주문 실패 시 재 주문 시도(10초 후)
     else:
         print(f'재 주문 시도(10초 후 다시 초기화 작업 시작합니다.)...{response.status_code} / {response.json()}')
-        time.sleep(10)
-        recursive_get_investable_coin_map()
+        time.sleep(30)
+        return InvestmentService().initalize_investment()
 
 
 # 투자해도 될 것 같은 코인 목록 조회
@@ -90,11 +148,12 @@ def get_best_coin_name(investable_coins_map={}, prev_coins_map={}):
                 pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
                 return best_coin
         else:
+            from pyupbit import InvestmentService
             slack_message = f':meow_code: 살만한 코인이 없습니다.. 10초 후 다시 초기화 작업 시작합니다..'
             print(slack_message)
             time.sleep(10)
             pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
-            return recursive_get_investable_coin_map()
+            return InvestmentService().initalize_investment()
 
 
 # 살만한 코인이 없는 경우 코인 목록 재 조회

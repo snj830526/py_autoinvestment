@@ -9,6 +9,10 @@ def get_slack_channel():
     return config['slack_channel']
 
 
+# 슬랙 채널아이디
+def get_slack_channel_id():
+    return config['slack_channel_id']
+
 # access key
 def get_access_key():
     return config['access_key']
@@ -47,6 +51,16 @@ def get_auto_sell():
 # 손절 퍼센트값
 def get_force_sell_percent():
     return config['force_sell_percent']
+
+
+# 구매용 슬랙 봇 토큰
+def get_slack_bot_token():
+    return config['purchase_slack_bot_token']
+
+
+# 구매 키워드
+def get_purchase_keywords():
+    return ['2', '구매', '사라']
 
 
 class StaticProperties:

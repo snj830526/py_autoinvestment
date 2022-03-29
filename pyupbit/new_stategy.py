@@ -60,7 +60,9 @@ def get_investable_coins(market, market_name):
     # 어제 거래량
     yesterday_trade_amount = pyupbit.get_yesterday_trade_amount(candle)
     flag_trade_amount = yesterday_trade_amount >= 1_000_000_000
-    if not flag_trade_amount:
+    yesterday_trade_volume = pyupbit.get_yesterday_trade_volume(candle)
+    flag_trade_volume = yesterday_trade_volume >= 500_000_000
+    if not flag_trade_amount or flag_trade_volume:
         return None
 
     # 코인 현재 단가
@@ -121,7 +123,7 @@ def get_investable_coins(market, market_name):
     #         prev_trade_price = trade_price
 
     # 15분 봉 기준 3번 하락 한 코인
-    minute_candle_list = pyupbit.get_minute_candle_data(market, 15, 5)
+    minute_candle_list = pyupbit.get_minute_candle_data(market, 5, 6)
     is_profitable = False
     prev_trade_price = 0
     for idx, data in enumerate(minute_candle_list):

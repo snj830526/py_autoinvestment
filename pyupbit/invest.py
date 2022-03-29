@@ -112,7 +112,7 @@ def sell_all():
 def order_best_coin(best_coin='', order_amount=0):
     coin_info = pyupbit.view_candle_min(best_coin)
     order_volume = pyupbit.get_possible_order_volume(coin_info, order_amount)
-    order_money = (order_amount / order_volume)
+    order_money = round(order_amount / order_volume, 1)
     print(f'잘 될 것 같은 코인 구매 ::: unit_price : {order_money}, amount : {order_volume}')
     # 50,000원 어치 매수
     return pyupbit.order_coin(
