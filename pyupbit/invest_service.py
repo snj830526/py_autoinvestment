@@ -60,13 +60,13 @@ class InvestmentService:
         else:
             slack_message = ':meow_party: 수익률이 100% 이하라서 매도 없이 초기화 시작함.'
             print(slack_message)
-            pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
+            # pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
 
     def check_my_investment(self, my_investment, prev_profit_rate, recoding_profit_rate, score, has_minus_exp, counter):
         for market in my_investment.keys():
             # 코인의 현재 수익률을 확인하면서 매도 여부 판단 -> 자동 매도 처리 함(auto_sell 옵션에 따라 동작 - YES/NO)
             prev_profit_rate, score, has_minus_exp = pyupbit.new_working(
-                market, my_investment, prev_profit_rate, score, has_minus_exp
+                market, my_investment, prev_profit_rate, score, has_minus_exp, counter
             )
 
             if counter % 10 == 0:

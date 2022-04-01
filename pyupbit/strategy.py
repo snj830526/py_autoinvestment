@@ -41,7 +41,8 @@ def wait_for_purchase(best_coin, order_money):
                         print(f'아직 사지지 않았습니다. 30초 후 다시 초기화 작업 시작합니다..')
                         # 너무 오래 걸리면 주문 취소, 30초 후 다시 매수 시도
                         pyupbit.cancel_order(pyupbit.get_order_bid_uuid(response.json()))
-                        time.sleep(30)
+                        InvestmentService().initalize_investment()
+                        break
                 purchase_slack_bot.chat_meMessage(channel=slack_channel, text=f":tada:")
                 break
         elif get_message == '0':
@@ -53,10 +54,10 @@ def wait_for_purchase(best_coin, order_money):
             purchase_slack_bot.chat_meMessage(
                 channel=slack_channel,
                 text=f":meow_party: $ 구매 하고 싶으면 '2'을 입력 해라용. \n"
-                     f"다시 조회하고 싶으면 '0'!!\n"
+                     f"다시 조회하고 싶으면 '0'!! \n"
                      f"coin_info :: {coin_info[0]['market']} / {coin_info[0]['trade_price']}"
             )
-            time.sleep(3)
+            time.sleep(10)
 
 
 # 초기화 준비
@@ -112,13 +113,14 @@ def init(best_coin='', order_money=0):
 def get_investable_coin_map(market_codes=[], market_names=[]):
     investable_coins_map = {}
     i = 0
+    pyupbit.send_message(pyupbit.get_slack_channel(), ':loading: Picking a coin..')
     for code in market_codes:
         # coin = { 코인 코드 : 오늘 거래량 }
         coin = pyupbit.get_investable_coins(code, market_names[i])
 
         if coin is not None:
             investable_coins_map.update(coin)
-        time.sleep(0.25)
+        time.sleep(0.2)
         i = i + 1
     return investable_coins_map
 

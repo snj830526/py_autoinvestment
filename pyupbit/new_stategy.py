@@ -168,7 +168,7 @@ def get_investable_coins(market, market_name):
 
 
 # 매도 시점 스코어 기록기
-def new_calc_profit_score(happy_score=0, prev_profit_rate=0, current_profit_rate=0):
+def new_calc_profit_score(happy_score=0, prev_profit_rate=0, current_profit_rate=0, counter=0):
     # 플러스 변동폭
     plus_change_rate = current_profit_rate - prev_profit_rate
     # 스코어 계산 하기!
@@ -183,10 +183,10 @@ def new_calc_profit_score(happy_score=0, prev_profit_rate=0, current_profit_rate
     # 수익률 100% 미만
     else:
         happy_score = 0
-    slack_message = f':meow_code: 현재 스코어는 ::: {round(happy_score, 2)} / 변동폭은 ::: {round(plus_change_rate, 2)}% / 직전 수익률은 ::: {prev_profit_rate}% / 현재 수익률은 ::: {current_profit_rate}%'
+    slack_message = f':meow_code: 변동폭은 ::: {round(plus_change_rate, 2)}% / 현재 수익률은 ::: {current_profit_rate}%'
     print(slack_message)
 
-    if not check_profit_rate_in_red(current_profit_rate):
+    if not check_profit_rate_in_red(current_profit_rate) and counter % 100 == 0:
         pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
 
     if happy_score < 0:
@@ -198,7 +198,7 @@ def new_calc_profit_score(happy_score=0, prev_profit_rate=0, current_profit_rate
 
 
 # 새로운 투자 로직
-def new_working(market, my_investment={}, prev_profit_rate=100, score=0, has_minus_exp=False):
+def new_working(market, my_investment={}, prev_profit_rate=100, score=0, has_minus_exp=False, counter=0):
     # 일 캔들 조회
     candle = pyupbit.get_candle_data(market)
     # 내가 매수 한 코인 단가
@@ -238,27 +238,24 @@ def new_working(market, my_investment={}, prev_profit_rate=100, score=0, has_min
     if profit_rate < 100:
         has_minus_exp = True
 
-    # 스코어 기준 계산 하기(상승시에만 계산하니까 1로 변경)
-    #if score >= 1:
     if 100.1 <= profit_rate != prev_profit_rate:
-        # pyupbit.sell_all()
-        pyupbit.send_message(pyupbit.get_slack_channel(), f':aaw_yeah: [벌었음!!]' + slack_message)
-        print('sell!!')
+        if counter % 100 == 0:
+            pyupbit.send_message(pyupbit.get_slack_channel(), f':aaw_yeah: [벌었음!!]' + slack_message)
+            print('sell!!')
 
-    # 버티기 -> 손절 포인트 -10% (테스트) -> 손절 시 1시간 생각할 시간을 가지게 하고 다시 들어가기.
     if profit_rate < pyupbit.get_force_sell_percent() and profit_rate != prev_profit_rate:
         pyupbit.sell_all()
         slack_message1 = f"""
         ':ahhhhhhhhh: [손절하였습니다...]'
         {slack_message}
-        5분 뒤 자동투자를 다시 시작 합니다.
+        10초 뒤 자동투자를 다시 시작 합니다.
         """
         pyupbit.send_message(pyupbit.get_slack_channel(), slack_message1)
-        time.sleep(300)
+        time.sleep(10)
     else:
         print('thinking...')
 
     # 스코어(매도시점용)
-    score, prev_profit_rate = pyupbit.new_calc_profit_score(score, prev_profit_rate, profit_rate)
+    score, prev_profit_rate = pyupbit.new_calc_profit_score(score, prev_profit_rate, profit_rate, counter)
 
     return prev_profit_rate, score, has_minus_exp

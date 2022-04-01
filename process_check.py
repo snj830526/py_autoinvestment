@@ -12,8 +12,8 @@ def check():
             slack_message = ":meow_whacky_rainbow: 프로그램 시작합니다."
             start_investment_process(slack_message, 0)
         if check_process.find('main.py') == -1:
-            slack_message = ":meow_whacky_rainbow: 프로그램이 중지되었습니다. 10초 뒤 재시작 합니다."
-            start_investment_process(slack_message, 10)
+            slack_message = ":meow_whacky_rainbow: 프로그램이 중지되었습니다. 5초 뒤 재시작 합니다."
+            start_investment_process(slack_message, 5)
         else:
             print('process running...')
         counter = counter + 1
