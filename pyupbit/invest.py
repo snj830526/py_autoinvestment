@@ -104,8 +104,8 @@ def sell_all():
                 order_volume=order_volume,
                 type=order_type
             )
-    else:
-        pyupbit.send_message(pyupbit.get_slack_channel(), '자동 매도 기능을 허용하지 않았습니다. \ninvest_helper에게 요청 하세요.')
+    # else:
+    #     pyupbit.send_message(pyupbit.get_slack_channel(), '자동 매도 기능을 허용하지 않았습니다. \ninvest_helper에게 요청 하세요.')
 
 
 # 가장 좋을 것 같은 코인 매수

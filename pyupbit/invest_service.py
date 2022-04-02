@@ -70,7 +70,7 @@ class InvestmentService:
             )
 
             if counter % 10 == 0:
-                notice_message = f':quad_parrot: 코인 : {market}, \n수익률 : {prev_profit_rate}%, \n수익률 변동폭 : {round(prev_profit_rate - recoding_profit_rate, 2)}%, \n마이너스 다녀온적? : {has_minus_exp}'
+                notice_message = f':quad_parrot: 코인 : {market}, \n수익률 : {prev_profit_rate}%, \n수익률 변동폭 : {round(prev_profit_rate - recoding_profit_rate, 2)}%'
                 print(f'send message! / {notice_message} / {counter}')
 
                 pyupbit.send_message(pyupbit.get_slack_channel(), notice_message)

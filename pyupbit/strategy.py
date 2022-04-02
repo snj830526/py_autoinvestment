@@ -70,7 +70,7 @@ def init_prepairing(investable_coins_map, all_market_codes, all_market_names, or
     현재코인들 수익률 ::: {investable_coins_map}
     이전코인들 수익률 ::: {prev_coins_map}
     """
-    pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
+    # pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
     # 투자 할 코인 1개 가져오기
     best_coin = get_best_coin_name(investable_coins_map, prev_coins_map)
     # TODO 수동 구매 기능 추가
@@ -120,7 +120,7 @@ def get_investable_coin_map(market_codes=[], market_names=[]):
 
         if coin is not None:
             investable_coins_map.update(coin)
-        time.sleep(0.2)
+        time.sleep(0.22)
         i = i + 1
     return investable_coins_map
 
@@ -151,10 +151,10 @@ def get_best_coin_name(investable_coins_map={}, prev_coins_map={}):
                 return best_coin
         else:
             from pyupbit import InvestmentService
-            slack_message = f':meow_code: 살만한 코인이 없습니다.. 10초 후 다시 초기화 작업 시작합니다..'
+            slack_message = f':meow_code: 살만한 코인이 없습니다.. 재시작합니다..'
             print(slack_message)
-            time.sleep(10)
             pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
+            time.sleep(3)
             return InvestmentService().initalize_investment()
 
 

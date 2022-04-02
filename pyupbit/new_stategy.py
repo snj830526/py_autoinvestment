@@ -248,7 +248,6 @@ def new_working(market, my_investment={}, prev_profit_rate=100, score=0, has_min
         slack_message1 = f"""
         ':ahhhhhhhhh: [손절하였습니다...]'
         {slack_message}
-        10초 뒤 자동투자를 다시 시작 합니다.
         """
         pyupbit.send_message(pyupbit.get_slack_channel(), slack_message1)
         time.sleep(10)
