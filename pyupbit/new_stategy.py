@@ -194,6 +194,8 @@ def new_calc_profit_score(happy_score=0, prev_profit_rate=0, current_profit_rate
 
     prev_profit_rate = current_profit_rate
 
+    print(f'testtt ::: {prev_profit_rate}')
+
     return happy_score, prev_profit_rate
 
 
@@ -262,6 +264,6 @@ def new_working(market, my_investment={}, prev_profit_rate=100, score=0, has_min
         print('thinking...')
 
     # 스코어(매도시점용)
-    prev_profit_rate = pyupbit.new_calc_profit_score(0, prev_profit_rate, profit_rate, counter)
+    score, prev_profit_rate = pyupbit.new_calc_profit_score(0, prev_profit_rate, profit_rate, counter)
 
-    return prev_profit_rate, has_minus_exp
+    return prev_profit_rate, score, has_minus_exp
