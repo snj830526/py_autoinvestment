@@ -25,7 +25,7 @@ def get_coin_investablity(market="KRW-BTC"):
         'query_hash_alg': 'SHA512',
     }
 
-    jwt_token = jwt.encode(payload, pyupbit.get_secret_key()).decode('utf8')
+    jwt_token = jwt.encode(payload, pyupbit.get_secret_key())
     authorize_token = 'Bearer {}'.format(jwt_token)
     headers = {"Authorization": authorize_token}
 
@@ -56,7 +56,7 @@ def order_coin(market_name="KRW-BTC", order_money=0, order_volume=0, type='bid')
         'query_hash_alg': 'SHA512',
     }
 
-    jwt_token = jwt.encode(payload, pyupbit.get_secret_key()).decode('utf8')
+    jwt_token = jwt.encode(payload, pyupbit.get_secret_key())
     authorize_token = 'Bearer {}'.format(jwt_token)
     headers = {"Authorization": authorize_token}
 
@@ -142,7 +142,7 @@ def cancel_order(order_uuid=''):
             'query_hash_alg': 'SHA512',
         }
 
-        jwt_token = jwt.encode(payload, pyupbit.get_secret_key()).decode('utf8')
+        jwt_token = jwt.encode(payload, pyupbit.get_secret_key())
         authorize_token = 'Bearer {}'.format(jwt_token)
         headers = {"Authorization": authorize_token}
 

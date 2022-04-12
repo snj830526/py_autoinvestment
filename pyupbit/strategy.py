@@ -13,8 +13,8 @@ def _get_purchase_bot():
 def wait_for_purchase(best_coin, order_money):
     purchase_slack_bot = _get_purchase_bot()
     slack_channel = pyupbit.get_slack_channel_id()
-    print(f'test :: {slack_channel}')
-
+    
+    counter = 0
     while True:
         if not purchase_slack_bot:
             purchase_slack_bot = _get_purchase_bot()
@@ -51,13 +51,20 @@ def wait_for_purchase(best_coin, order_money):
         else:
             # 코인의 시세 조회
             coin_info = pyupbit.view_candle_min(best_coin)
+            slack_message = f"""
+            :meow_party: $ 구매 하고 싶으면 '2'을 입력 해라냥.
+            다시 조회하고 싶으면 '0'!!
+            coin_info :: {coin_info[0]['market']} / {coin_info[0]['trade_price']}
+            """
+            if counter % 20 == 0:
+                slack_message += f'\nhttps://upbit.com/exchange?code=CRIX.UPBIT.{coin_info[0]["market"].upper()}'
+
             purchase_slack_bot.chat_meMessage(
                 channel=slack_channel,
-                text=f":meow_party: $ 구매 하고 싶으면 '2'을 입력 해라용. \n"
-                     f"다시 조회하고 싶으면 '0'!! \n"
-                     f"coin_info :: {coin_info[0]['market']} / {coin_info[0]['trade_price']}"
+                text=slack_message
             )
-            time.sleep(10)
+            time.sleep(30)
+            counter += 1
 
 
 # 초기화 준비
@@ -145,13 +152,13 @@ def get_best_coin_name(investable_coins_map={}, prev_coins_map={}):
                 best_coin = list(coins_map[0])[0]
                 # 현재가와 1차 저항선 간 차이
                 # coin_dynamic_rate = list(coins_map[0])[1]
-                slack_message = f"best_coin ::: {best_coin}"
+                slack_message = f"best_coin ::: {best_coin} / https://upbit.com/exchange?code=CRIX.UPBIT.{best_coin.upper()}"
                 print(slack_message)
                 pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
                 return best_coin
         else:
             from pyupbit import InvestmentService
-            slack_message = f':meow_code: 살만한 코인이 없습니다.. 재시작합니다..'
+            slack_message = f':meow_code: 살만한 코인이 없습니다. 다시 조회 합니다..'
             print(slack_message)
             pyupbit.send_message(pyupbit.get_slack_channel(), slack_message)
             time.sleep(3)

@@ -107,7 +107,7 @@ def get_investable_coins(market, market_name):
     #                 is_profitable = False
     #                 break
     #             prev_change_ratio = change_ratio
-    #
+    
     #         if idx % 2 == 1:
     #             if is_plus_candle(prev_trade_price, trade_price):
     #                 is_profitable = True
@@ -122,7 +122,7 @@ def get_investable_coins(market, market_name):
     #                 break
     #         prev_trade_price = trade_price
 
-    # 15분 봉 기준 3번 하락 한 코인
+    # 5분 봉 기준 3번 하락 한 코인
     minute_candle_list = pyupbit.get_minute_candle_data(market, 5, 6)
     is_profitable = False
     prev_trade_price = 0
@@ -225,7 +225,7 @@ def new_working(market, my_investment={}, prev_profit_rate=100, score=0, has_min
     first_high_price = pyupbit.first_higher_line(standard_price, prev_low_price)
     # 2차 저항선
     second_high_price = pyupbit.second_higher_line(standard_price, prev_high_price, prev_low_price)
-    slack_message = f"코인명 ::: {market}(매수단가 ::: {buy_unit_price}, 현재단가 ::: {current_unit_price}, 수익률 ::: {str(profit_rate)}%"
+    slack_message = f"코인명 ::: {market}(매수단가 ::: {buy_unit_price}, 현재단가 ::: {current_unit_price}, 결과 ::: {str(profit_rate)}%"
     print(slack_message)
     # 매도 시점 판단 로직
     """
@@ -240,21 +240,28 @@ def new_working(market, my_investment={}, prev_profit_rate=100, score=0, has_min
 
     if 100.1 <= profit_rate != prev_profit_rate:
         if counter % 100 == 0:
-            pyupbit.send_message(pyupbit.get_slack_channel(), f':aaw_yeah: [벌었음!!]' + slack_message)
+            slack_message1 = f"""
+            :aaw_yeah: [벌었음!!]
+            {slack_message}
+            https://upbit.com/exchange?code=CRIX.UPBIT.{market.upper()}
+            """
+            pyupbit.send_message(pyupbit.get_slack_channel(), slack_message1)
             print('sell!!')
+            time.sleep(60)
 
     if profit_rate < pyupbit.get_force_sell_percent() and profit_rate != prev_profit_rate:
         pyupbit.sell_all()
         slack_message1 = f"""
         ':ahhhhhhhhh: [손절하였습니다...]'
         {slack_message}
+        https://upbit.com/exchange?code=CRIX.UPBIT.{market.upper()}
         """
         pyupbit.send_message(pyupbit.get_slack_channel(), slack_message1)
-        time.sleep(10)
+        time.sleep(60)
     else:
         print('thinking...')
 
     # 스코어(매도시점용)
-    score, prev_profit_rate = pyupbit.new_calc_profit_score(score, prev_profit_rate, profit_rate, counter)
+    prev_profit_rate = pyupbit.new_calc_profit_score(0, prev_profit_rate, profit_rate, counter)
 
-    return prev_profit_rate, score, has_minus_exp
+    return prev_profit_rate, has_minus_exp

@@ -11,7 +11,7 @@ def get_my_account():
         'nonce': str(uuid.uuid4())
     }
 
-    jwt_token = jwt.encode(payLoad, pyupbit.get_secret_key()).decode('utf8')
+    jwt_token = jwt.encode(payLoad, pyupbit.get_secret_key())
     authorized_token = 'Bearer {}'.format(jwt_token)
     headers = {'Authorization': authorized_token}
 
